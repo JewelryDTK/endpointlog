@@ -1,0 +1,7 @@
+import rawPosts from './posts.json';
+const summaries:Record<number,string>={674:'What the Windows Hello change means for your Conditional Access policies and device onboarding.',647:'A hands-on look at screen sharing with Copilot Vision in Microsoft 365.',572:'A PowerShell tool to clean up an Intune lab tenant, with the safeguards that matter.',583:'What the move into Microsoft 365 E3 means for everyday remote support.',520:'What happened when I let Copilot Cowork take on real work.',438:'Building a bulk Windows Autopilot Group Tag tool with PowerShell and Microsoft Graph.',402:'Platform SSO for macOS, app inventory, and the Microsoft updates on my radar.',357:'Exploring the step from answering questions to completing tasks with Copilot Cowork.'};
+const categoryMap:Record<number,string[]>={674:['Security','Endpoints'],647:['AI & Copilot'],572:['Automation','Endpoints'],583:['Endpoints'],520:['AI & Copilot'],438:['Automation','Endpoints'],402:['Endpoints','AI & Copilot'],357:['AI & Copilot']};
+export const posts=rawPosts.map(post=>({...post,summary:summaries[post.id],categories:categoryMap[post.id]}));
+export type Post=(typeof posts)[number];
+export const topics=['Endpoints','Security','Automation','AI & Copilot'];
+export const articleUrl=(post:Post)=>'/article/'+post.slug;

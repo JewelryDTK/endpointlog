@@ -1,0 +1,1 @@
+export default function NotFound(){return <main id="main" className="shell page-intro"><span className="eyebrow">404 · Page not found</span><h1>This page took<br/>a different path.</h1><p>You can find all the latest writing in the log.</p><a className="button primary" href="/blog" style={{marginTop:24}}>Explore the log</a></main>;}

@@ -1,0 +1,1167 @@
+[
+  {
+    "categories": [
+      "AI News & Trends",
+      "Security"
+    ],
+    "minutes": 10,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "There is a Conditional Access policy in nearly every tenant I work in that I have never had a reason to open. It is called something like CA-Persona-All-RegisterSecurityInfo. Somebody wrote it off a hardening checklist a long time ago, it targets the Register security information user action, it requires MFA when the user is not on a trusted network, and it has sat there behaving itself ever since."
+      },
+      {
+        "type": "p",
+        "text": "I went and opened one this month."
+      },
+      {
+        "type": "p",
+        "text": "On 6 July, Conditional Access policies targeting Register security information started being evaluated during Windows Hello for Business provisioning and macOS Platform SSO credential registration. Enforcement finished rolling out on 13 July. It is documented in the Learn article for the registration policy and in Message Center post MC1326253."
+      },
+      {
+        "type": "p",
+        "text": "The policy text has not changed. What has changed is the set of flows it now gets evaluated in."
+      },
+      {
+        "type": "h2",
+        "text": "What changed on 6 July"
+      },
+      {
+        "type": "p",
+        "text": "Before July, a policy scoped to that user action was evaluated in the combined registration experience and nowhere else. My Sign-Ins security info, the Authenticator app, turning on passwordless phone sign-in. Windows Hello provisioning and macOS Platform SSO registration were outside that boundary. They enforced MFA on their own account, because Azure DRS checks the MFA claim is still current before it will write a Windows Hello key to the directory, but they never consulted your policy. Your location condition, your authentication strength and your compliance requirement did not apply at the moment a passwordless credential was actually created."
+      },
+      {
+        "type": "p",
+        "text": "From 6 July those two flows evaluate the policy as well, including its grant controls."
+      },
+      {
+        "type": "p",
+        "text": "One thing that did not change, so it does not get muddled in. MFA is still required by default to register a passwordless credential, policy or no policy. That was true before July and it is true now. The only difference is that your own policy now gets a say as well."
+      },
+      {
+        "type": "p",
+        "text": "If nothing in your tenant targets the Register security information user action, your environment is unchanged. Microsoft states that explicitly. Plenty of tenants are in that position, so it is worth checking that before reading any further."
+      },
+      {
+        "type": "p",
+        "text": "The mental model I would hold onto is that the enforcement point moved rather than the policy. Windows Hello provisioning runs in the Cloud Experience Host, asks for an access token for the Azure Device Registration Service, and DRS confirms the MFA claim before writing the user key. What changed in July is that the token acquisition sitting in front of that step now runs your registration policy. So the failure, when it comes, lands during credential provisioning rather than at sign-in. That matters for troubleshooting, because it changes who reports it to you: a user partway through setting up a laptop, rather than anything on a dashboard."
+      },
+      {
+        "type": "h2",
+        "text": "Trusted locations, device compliance and authentication strength"
+      },
+      {
+        "type": "p",
+        "text": "The grant controls people put on registration policies were chosen for a world where registration was a browser flow, done at a desk, by someone who already had a working account and a working device. Provisioning a credential on a laptop that was unboxed this morning is a different situation, and the three common grant controls each run into it differently."
+      },
+      {
+        "type": "p",
+        "text": "Trusted locations is the most common shape, and Microsoft names it in the documentation directly: some organisations used trusted network location as the way to secure registration. It worked because you could tell people to do it from the office. Windows Hello provisioning fires when the user first signs in to a newly Entra joined device, which for anyone shipping laptops straight to new hires is a home network by definition. The same applies to a Mac being unboxed on somebody’s kitchen table."
+      },
+      {
+        "type": "p",
+        "text": "Device compliance is the other pattern Microsoft calls out, and this one I am not going to guess at. Windows Hello provisioning is attempted automatically after Entra join, which on an Autopilot device is very early in its life. Whether the device has finished a compliance evaluation and reported compliant by that precise moment depends on your compliance policies, your grace period, and the tenant setting for how devices with no policy assigned get marked. I could not find Microsoft documenting the ordering for this scenario, so this is one to test rather than reason about. I will come back to how."
+      },
+      {
+        "type": "p",
+        "text": "Authentication strength has an actual logic problem in it. If your registration policy requires a phishing-resistant strength, and the credential the user is trying to register is the phishing-resistant credential, you have a circular dependency: the user needs a passkey in order to create their passkey. Temporary Access Pass is the documented way out and it does satisfy multifactor requirements, but a TAP has to be issued by a person or an automation before the user ever powers the device on. That turns a policy setting into an onboarding process change, which is a considerably larger piece of work."
+      },
+      {
+        "type": "p",
+        "text": "One more thing before you reach for authentication strength at all. Microsoft warns that external authentication methods are currently incompatible with it. If you have a third-party MFA provider in play, stay on Require multifactor authentication."
+      },
+      {
+        "type": "h2",
+        "text": "Platform SSO on macOS"
+      },
+      {
+        "type": "p",
+        "text": "Two changes landed a couple of months apart this year and they interact."
+      },
+      {
+        "type": "p",
+        "text": "In May, Intune added support for finishing Platform SSO registration during macOS Automated Device Enrollment. You set Enable Registration During Setup in a settings catalog policy, deploy Company Portal 5.2604.0 or newer as a line-of-business app, and set the ADE policy to Setup Assistant with modern authentication and await final configuration enabled. It requires macOS 26 or newer. The benefit is that users have working access to Entra resources as soon as they reach the desktop, instead of hitting a registration prompt some time later."
+      },
+      {
+        "type": "p",
+        "text": "Two months after that, Conditional Access started being evaluated during Platform SSO credential registration."
+      },
+      {
+        "type": "p",
+        "text": "So the point at which you deliberately pulled PSSO registration forward into Setup Assistant is also the point at which it came under a policy written with a browser in mind. If you turned registration-during-setup on in the spring and your registration policy carries a location condition, that combination is worth a test build before the next batch of Macs goes out."
+      },
+      {
+        "type": "p",
+        "text": "To be clear about what is documented and what is not: I am reading those two changes against each other. Microsoft has not published anything connecting them. Both halves are documented, but the connection between them is my own reading."
+      },
+      {
+        "type": "h2",
+        "text": "Auditing your registration policies"
+      },
+      {
+        "type": "p",
+        "text": "Start by finding out whether you are affected at all. In the Entra admin center at entra.microsoft.com, with at least the Conditional Access Administrator role, go to Entra ID → Conditional Access → Policies and look for anything where Target resources → User actions has Register security information ticked. Most tenants have one, occasionally two. If nothing does, you are finished."
+      },
+      {
+        "type": "p",
+        "text": "If something does, read its grant controls before you touch anything. Access controls → Grant tells you what is required, and Conditions → Locations tells you whether a location condition is in play. Those two together are your whole exposure; nothing else on the policy matters here. A policy that only requires multifactor authentication is very probably fine, because MFA was already mandatory for passwordless registration and a TAP satisfies it. A location condition, a compliance requirement or an authentication strength is what needs testing."
+      },
+      {
+        "type": "p",
+        "text": "Then build a device rather than working it out on paper. A clean user-driven Autopilot enrolment, a test account in scope of the policy, deliberately off-network, and watch what the Windows Hello prompt does. Pull the sign-in log for that user afterwards and read which policy applied and what it required. Do the same with an ADE build if you run Macs. That is roughly an afternoon of work."
+      },
+      {
+        "type": "p",
+        "text": "Do it in report-only. You can flip a live policy into it, but for a production registration policy I would rather duplicate the policy, set the copy to Report-only under Enable policy at the bottom of the blade, and leave the original running untouched."
+      },
+      {
+        "type": "p",
+        "text": "Two other blades are worth knowing while you are in there. Whether Windows Hello provisioning fires during OOBE at all is decided by the tenant-wide policy at Intune admin center → Devices → Windows → Enrollment → Windows Hello for Business, which applies to every device that enrols and cannot be scoped to a group. That is why most people set it to Disabled there and enable Windows Hello for the right groups through Endpoint security → Account protection instead. If you would rather provisioning happened once the device has settled, that split is the lever. On the Mac side, registration-during-setup lives in a settings catalog policy at Intune admin center → Devices → Manage devices → Configuration → Create → New policy, with macOS as the platform and Settings catalog as the profile type, and the setting is Enable Registration During Setup."
+      },
+      {
+        "type": "p",
+        "text": "If it does break, there are three ways out and they are not equally good. Issuing a TAP as part of onboarding is what Microsoft points at, and it is the option that keeps your security posture intact, but it puts a manual step or an automation into your joiner process. At fifteen thousand devices across seventy-odd countries with a mixed bag of local support models, that is a project rather than a setting. You enable TAP under Entra ID → Authentication methods → Policies → Temporary Access Pass and issue it per user from that user’s Authentication methods blade. Loosening the grant control is quicker, but it weakens a control you presumably put there on purpose. Splitting the policy, so that first-time registration follows a TAP-friendly path while ongoing security info changes stay locked down, is the middle option and probably where most enterprises will land."
+      },
+      {
+        "type": "p",
+        "text": "On the cost of doing nothing. With no registration policy, there is none. With a policy that only requires MFA, almost certainly none. With a location, compliance or strength control, and devices that get shipped to people who are not sitting in an office, new device setup stalls at credential provisioning. Enforcement is already live, so this belongs in this week rather than in Q4. Budget an afternoon to find out where you stand, and a sprint if the answer is that TAP has to enter your onboarding process, because that is a change to how people hand out laptops rather than a change to a blade."
+      },
+      {
+        "type": "h2",
+        "text": "What this means for policy reviews"
+      },
+      {
+        "type": "p",
+        "text": "The change itself is right, and I want to say that plainly rather than treat it as an inconvenience. Creating a passwordless credential is exactly the moment you would want your policy to apply. Under the old behaviour, somebody who had got hold of a live session through an adversary-in-the-middle attack could provision a Windows Hello credential on hardware you have never seen, and your registration policy would never have been consulted. That gap got more serious the harder an organisation leaned on passwordless. Microsoft closed it."
+      },
+      {
+        "type": "p",
+        "text": "The difficulty is not with the change. It is that a control written for a browser flow now sits in a provisioning path, and those two contexts make very different assumptions about where the user is standing and what they already have in their hand."
+      },
+      {
+        "type": "p",
+        "text": "That is the part worth generalising. A Conditional Access policy is not a static object. What it means in practice is determined by what it gets evaluated against, and Microsoft keeps widening that surface without a single character of your policy text changing. The same thing happened last month when Multi Admin Approval started applying to Graph calls from service principals: nobody edited a policy, but the set of calls it intercepted grew."
+      },
+      {
+        "type": "p",
+        "text": "Which leaves a housekeeping problem I do not have a good answer to. An annual Conditional Access review that reads the policies you wrote will not catch this, because the policies read exactly as they did last year. The review has to cover what those policies now touch, and short of reading release notes every month I do not know a clean way to build that list."
+      },
+      {
+        "type": "p",
+        "text": "If you have a registration-scoped policy with a location condition on it, I would like to know what your first Autopilot build did after the 13th. Did Windows Hello provisioning fail outright, defer quietly to the desktop, or complete without trouble? That is the detail that would settle whether the compliance and location ordering behaves the way a lot of us are assuming."
+      }
+    ],
+    "image": "/assets/post-674.jpg",
+    "id": 674,
+    "title": "Conditional Access Now Runs During Windows Hello Setup",
+    "date": "23 Jul 2026",
+    "slug": "conditional-access-now-runs-during-windows-hello-setup",
+    "url": "https://workswithai.online/2026/07/23/conditional-access-now-runs-during-windows-hello-setup/"
+  },
+  {
+    "categories": [
+      "AI Tools",
+      "Copilot & M365"
+    ],
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Copilot Vision isn’t new in itself. It’s been available on the consumer side for a while, in Windows, in Edge, and in the Copilot mobile app. What started rolling out in late June 2026 is the work version: Vision in Microsoft 365 Copilot, tied to a Copilot license, grounded in your tenant data, and controllable from the admin center. It should be generally available by the end of July, and it arrives switched on."
+      },
+      {
+        "type": "p",
+        "text": "The basic idea is the same as the consumer feature. During a voice conversation with Copilot, you share your desktop screen or your phone’s camera, and Copilot answers questions about what it’s looking at. The difference is what it can reach for when it answers. It combines what’s on your screen with your Microsoft 365 work data, so you can ask how the numbers in front of you compare to the report you reviewed last month and get an answer that draws on both."
+      },
+      {
+        "type": "p",
+        "text": "So here’s how it works in practice, where it’s useful, and where it falls over."
+      },
+      {
+        "type": "h2",
+        "text": "Voice only, and that constraint shapes everything"
+      },
+      {
+        "type": "p",
+        "text": "Vision lives inside a voice chat. Not a text chat with an attachment, an actual spoken conversation. The consumer Copilot app has a text-in, text-out Vision mode, but that hasn’t crossed over to the Microsoft 365 version. For now: no microphone, no Vision."
+      },
+      {
+        "type": "p",
+        "text": "This matters more than it sounds. It rules out the open-plan office, the train, the client meeting where you can’t start narrating at your laptop. Vision competes with screenshot-and-paste rather than replacing it, because screenshot-and-paste works everywhere and this doesn’t. Worth setting expectations on that before you tell a department it’s going to change how they work."
+      },
+      {
+        "type": "p",
+        "text": "Starting a session is straightforward enough. Sign in to Copilot Chat with your work account and start a voice conversation from the prompt box, or with the Copilot key or Win+C."
+      },
+      {
+        "type": "p",
+        "text": "The voice chat entry point in the Copilot prompt box."
+      },
+      {
+        "type": "p",
+        "text": "Once you’re in the voice session, a small floating toolbar appears. The share icon is what starts Vision."
+      },
+      {
+        "type": "p",
+        "text": "The floating toolbar during a voice session: settings, share, microphone, and close."
+      },
+      {
+        "type": "p",
+        "text": "Selecting it opens a picker where you choose what Copilot gets to see: a whole display, or one specific window. Note that it’s a deliberate, explicit choice per source, not a blanket grant."
+      },
+      {
+        "type": "p",
+        "text": "The M365 Copilot Vision picker, listing displays and individual open windows to share."
+      },
+      {
+        "type": "p",
+        "text": "From there you just talk. Copilot confirms it can both hear you and see the screen, and you keep asking follow-ups in the same conversation. Stopping the share doesn’t end the voice chat, which catches people out the first time."
+      },
+      {
+        "type": "p",
+        "text": "An active Vision session. Copilot confirms it can see the shared screen, with the purple frame and Stop control visible at the bottom."
+      },
+      {
+        "type": "p",
+        "text": "That purple frame and the persistent Sharing indicator are worth pointing out, because they answer the question your security people will ask first. Sharing is user-initiated and session-bound, and while it’s running the user can see that it’s running."
+      },
+      {
+        "type": "h2",
+        "text": "It reads stills, not motion, and it will answer the wrong question confidently"
+      },
+      {
+        "type": "p",
+        "text": "Under the hood, the shared feed is processed as a series of images rather than as video. That one fact explains most of the rough edges. It can’t read video or animated GIFs, so it won’t watch a screen recording of a bug and tell you what went wrong."
+      },
+      {
+        "type": "p",
+        "text": "The subtler problem is that Vision doesn’t reliably know which thing on your screen you mean, and it won’t tell you when it’s guessing. Asked to look at a blog webpage, Copilot confidently described the blog’s admin dashboard instead, complete with SEO ratings and publishing dates. Accurate, fluent, and about entirely the wrong thing. It took an explicit correction to get it to look at the page actually in front of me."
+      },
+      {
+        "type": "p",
+        "text": "Vision describing the blog dashboard when asked about the webpage on screen, then giving a correct answer only after being told to look again."
+      },
+      {
+        "type": "p",
+        "text": "Nothing in that first answer signals uncertainty. It reads exactly like a correct answer. That’s the failure mode to brief people on: not that Vision gets things wrong, but that it gets the wrong thing right. Keep what you’re asking about in view, don’t flick between windows mid-question, and be specific about what you mean rather than assuming it’s looking where you’re looking."
+      },
+      {
+        "type": "p",
+        "text": "Two more limits worth knowing. Vision draws on your daily voice usage and is capacity-based, with a warning in the app as you approach the limit, so treat it as a real ceiling rather than an unlimited feature. And it doesn’t act. Microsoft is explicit that Vision can’t take action or directly manipulate items on your screen. It explains and guides, and that’s where it stops. If you were hoping for something that drives the UI, that’s Cowork’s job."
+      },
+      {
+        "type": "h2",
+        "text": "The prompt that works is not the one you’ll reach for"
+      },
+      {
+        "type": "p",
+        "text": "The instinct is to share a screen and ask what it is. That gets you a competent description of something you were already looking at, which wastes the feature."
+      },
+      {
+        "type": "p",
+        "text": "Vision earns its keep on questions that only work because it can see the screen and read your tenant at the same time. What are the key trends here, and how do they compare to the report I reviewed last month. What feedback did I get on this, and what should I change first. I’m stuck on this screen, walk me through the next step. Each of those leans on both halves: the screen supplies the what, your work data supplies the context, and the answer is something neither could have produced alone."
+      },
+      {
+        "type": "p",
+        "text": "For our kind of work, the scenarios worth testing are the ones where showing beats describing. A dashboard you’re walking a client through and want a second read on. An admin blade you don’t know well, where the alternative is a help article written against a UI that’s been redesigned twice since. Hardware in a rack through the phone camera, if you’re using the mobile side."
+      },
+      {
+        "type": "h2",
+        "text": "The camera is the decision, not the screen"
+      },
+      {
+        "type": "p",
+        "text": "Vision is on by default and the only admin lever is turning it off. You’ll find it in the Microsoft 365 admin center → Copilot → Settings → View all → Screen and camera sharing. It sits in the same list as web search, pinning, and pay-as-you-go billing, so it’s easy to scroll straight past if you’re not looking for it."
+      },
+      {
+        "type": "p",
+        "text": "Screen and camera sharing in the Copilot settings list in the Microsoft 365 admin center."
+      },
+      {
+        "type": "p",
+        "text": "Screen sharing and camera sharing can be disabled independently of each other, and disabling Vision does not disable voice. So you’re not trading away hands-free Copilot to solve a screen-sharing concern."
+      },
+      {
+        "type": "p",
+        "text": "That independence is the whole game for most organisations. Desktop screen sharing usually passes without much argument. The phone camera is where legal and the works council get interested, and in the Netherlands in particular, a feature that puts a camera in an employee’s hand and streams the feed to a cloud service is a conversation, not a rollout. Being able to switch off camera sharing while keeping screen sharing means you can have that conversation on its own merits instead of as an all-or-nothing call."
+      },
+      {
+        "type": "p",
+        "text": "Worth checking in your own tenant before you promise anything: whether this setting can be scoped to specific users or groups, or whether it’s an org-wide switch. Some settings in that same list are scopeable and others aren’t, and Microsoft’s rollout messaging doesn’t say either way for this one. If it turns out to be org-wide, there’s no technical pilot ring available to you, only a behavioural one: tell a handful of people to try it and stay quiet to everyone else."
+      },
+      {
+        "type": "p",
+        "text": "For the privacy conversation, three facts usually settle it. Sharing is user-initiated and session-bound, so Copilot only sees what someone deliberately shares while they’re sharing it. Audio and video are held briefly for feedback and deleted after 48 hours. Text transcripts are stored and managed exactly like normal Copilot Chat conversations, so they land in chat history and can be deleted the same way. Microsoft also states Vision doesn’t infer sensitive personal attributes such as race or emotion."
+      },
+      {
+        "type": "h2",
+        "text": "Is it worth telling people about?"
+      },
+      {
+        "type": "p",
+        "text": "For most users, not yet. Voice-only, a daily quota, no ability to take action, and a habit of answering confidently about the wrong window adds up to a narrow window of usefulness. The people who’ll get value are the ones whose problems are genuinely visual and awkward to type out, and in a typical organisation that’s a minority."
+      },
+      {
+        "type": "p",
+        "text": "But it’s on, right now, without you having done anything. So the move isn’t an adoption campaign, it’s a decision on the camera and a note to whoever owns your Copilot governance that this has landed. Then hand it to two or three people who work with dashboards or hardware and see whether talking to Copilot about a screen actually beats typing about it. That answer varies enormously by role and no feature list is going to tell you."
+      }
+    ],
+    "image": "/assets/post-647.jpg",
+    "id": 647,
+    "title": "A Look at Copilot Vision",
+    "date": "14 Jul 2026",
+    "slug": "a-look-at-copilot-vision",
+    "url": "https://workswithai.online/2026/07/14/a-look-at-copilot-vision/"
+  },
+  {
+    "categories": [
+      "Intune"
+    ],
+    "minutes": 12,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Every lab tenant I keep alive for more than a couple of months turns into the same thing: a graveyard. Leftover compliance policies from a proof of concept I ran back in spring. A few half-finished Settings Catalog profiles. A security baseline I spun up to test one setting and never removed. A pile of Autopilot profiles with names like “test2” and “test2-final.” None of it does any harm sitting there. It just makes the tenant useless as a clean slate the next time I want to demo something properly."
+      },
+      {
+        "type": "p",
+        "text": "Clearing it by hand is death by a thousand clicks. Open the blade, filter, select, delete, confirm. Move to the next blade. Do that sixty times. So I wrote a script that does the whole thing in one pass."
+      },
+      {
+        "type": "p",
+        "text": "It’s PowerShell on top of Microsoft Graph. It walks 25 categories of Intune configuration, finds everything in each one, shows you exactly what it found, makes you type YES, and only then deletes the lot. There’s a -DryRun switch so you can see the damage before you commit to any of it."
+      },
+      {
+        "type": "p",
+        "text": "Two things up front, because they matter. This is a lab and demo tenant tool: POC teardown, handing a tenant back clean, resetting a training environment. It is not something you point at production, and a good chunk of this post is about making sure you never do that by accident."
+      },
+      {
+        "type": "p",
+        "text": "The -DryRun discovery summary: a per-category count and a total, before anything is touched."
+      },
+      {
+        "type": "h2",
+        "text": "What it actually clears"
+      },
+      {
+        "type": "p",
+        "text": "The script isn’t clever about what it removes. It’s thorough. It runs through 25 endpoints on the Graph beta API and empties each one: device configuration profiles and Settings Catalog policies, compliance policies, ADMX and Group Policy configurations, security baselines and intents, PowerShell platform scripts and macOS shell scripts, proactive remediations, Autopilot deployment profiles and enrollment configurations, every flavour of app protection and app configuration policy across iOS, Android and the general ones, feature, quality and driver update profiles, macOS custom attribute scripts, notification message templates, assignment filters, role scope tags, Windows Information Protection in both its MDM and WE variants, and the Apple DEP onboarding settings."
+      },
+      {
+        "type": "p",
+        "text": "It’s deliberately careful in two small places. It skips the built-in default role scope tag, the one with id 0 that you can’t delete anyway, and it leaves Microsoft’s global proactive remediation scripts alone, only removing the ones you actually created."
+      },
+      {
+        "type": "p",
+        "text": "What it doesn’t touch matters just as much, because “Intune” and “policy” get used loosely, and it’s easy to assume more is in scope than it really is. It doesn’t delete your enrolled devices, it doesn’t remove the apps you’ve uploaded, and it doesn’t go anywhere near Conditional Access. It clears compliance policies, yes, but the CA policies that consume them live in Entra, not Intune, so a reset like this leaves your Conditional Access completely intact. If your test rig leans on a CA policy, you’ll still have it afterwards. If you wanted that gone too, that’s a separate job on a different surface."
+      },
+      {
+        "type": "h2",
+        "text": "The guardrails that are already in there"
+      },
+      {
+        "type": "p",
+        "text": "The deleting is the easy part. Any of us could write a foreach loop that fires DELETE at a Graph endpoint. The part worth spending time on is everything that stops it going wrong."
+      },
+      {
+        "type": "p",
+        "text": "DryRun first, always. Running the script with -DryRun does the full discovery, prints the summary, and exits without deleting a thing:"
+      },
+      {
+        "type": "pre",
+        "text": ".\\Remove-AllIntunePolicies.ps1 -DryRun"
+      },
+      {
+        "type": "p",
+        "text": "You get a per-category count and a total, so you can sanity check that, say, 121 items across 25 categories matches what you’d expect a tenant to be holding. If that number is bigger than it should be, stop and work out why before you go further."
+      },
+      {
+        "type": "p",
+        "text": "Then there’s the discovery output itself. Before anything is deleted, the script lists every object by name, so you’re not trusting a bare count, you’re watching the actual display names scroll past. That’s genuinely useful and also exactly why you should always sanitise a tenant before recording or screenshotting a session: I’ve blacked out client references below rather than shipping them into a blog post."
+      },
+      {
+        "type": "p",
+        "text": "Discovery listing real object names before deletion. Entries tied to a client identity are blacked out; the rest is genuine script output."
+      },
+      {
+        "type": "p",
+        "text": "The confirmation comes after that, and it’s not a Y/N you can fat-finger. It’s the full word YES, in capitals, or the script cancels and disconnects."
+      },
+      {
+        "type": "p",
+        "text": "The confirmation gate: total item count, an explicit warning, and a typed YES, not a keypress."
+      },
+      {
+        "type": "p",
+        "text": "Everything it does goes to a timestamped log file next to the script, one line per object, success or failure, with the id. Error handling is set to continue rather than halt, so a single object that refuses to delete doesn’t leave you half done with no record of where it stopped. And it pages through Graph properly with @odata.nextLink, so a category with more results than one page returns doesn’t quietly leave a chunk behind."
+      },
+      {
+        "type": "h2",
+        "text": "The guardrail I’d add before trusting it near a real login"
+      },
+      {
+        "type": "p",
+        "text": "Here’s the gap I’d close first. The confirmation asks you to type YES, but it never tells you which tenant you’re about to empty."
+      },
+      {
+        "type": "p",
+        "text": "If you’re a consultant, your Graph session history has three tenants in it on a slow day. Connect-MgGraph will happily reconnect to whichever one you were last in, and the script will discover and delete against it without ever putting the tenant name in front of you. The YES protects you from an accidental keypress. It does nothing to protect you from the wrong tenant."
+      },
+      {
+        "type": "p",
+        "text": "So before I run this on any machine that has ever touched a customer tenant, I’d add a tenant check to the confirmation, right after the connect:"
+      },
+      {
+        "type": "pre",
+        "text": "$ctx = Get-MgContext Write-Host (\"Connected to: \" + $ctx.TenantId + \" as \" + $ctx.Account) -ForegroundColor Yellow $tenantConfirm = Read-Host \"Type the tenant domain to confirm you are in the RIGHT tenant\" if ($tenantConfirm -ne \"contoso-lab.onmicrosoft.com\") { Write-Host \"Tenant mismatch. Aborting.\" -ForegroundColor Red Disconnect-MgGraph | Out-Null exit }"
+      },
+      {
+        "type": "p",
+        "text": "Now the script won’t proceed unless you’ve looked at the tenant it’s connected to and typed its name back. It turns a “did I read the output” check into a “do I know where I am” check, and the second one is what actually saves you."
+      },
+      {
+        "type": "h2",
+        "text": "How I’d actually run it"
+      },
+      {
+        "type": "p",
+        "text": "The sequence I’d follow, with the portal open in another tab:"
+      },
+      {
+        "type": "li",
+        "text": "Sign in with an account that only has rights in the lab tenant, not your everyday admin login. The script needs the four DeviceManagement*.ReadWrite.All scopes and will prompt for consent the first time."
+      },
+      {
+        "type": "li",
+        "text": "Run it with -DryRun and read the summary and the log. Compare the counts against what you know is in there."
+      },
+      {
+        "type": "li",
+        "text": "If, and only if, the tenant and the counts are what you expect, run it again without -DryRun, type YES, and let it work."
+      },
+      {
+        "type": "li",
+        "text": "Keep the log. It’s your record of exactly what left the tenant."
+      },
+      {
+        "type": "p",
+        "text": "If you want to eyeball the before and after in the UI, the objects it clears sit across three areas of the Intune admin center at intune.microsoft.com. Most live under Devices (configuration, compliance, scripts and remediations, enrollment), the baselines sit under Endpoint security, and the protection and configuration policies sit under Apps. A quick look at those blades before and after is a good gut check that the tool did what the log says it did."
+      },
+      {
+        "type": "h2",
+        "text": "The full script"
+      },
+      {
+        "type": "p",
+        "text": "Here’s the whole thing. This is the version without the tenant check, so if you’re running it anywhere near a real login, paste the block from earlier in right after the connect. You’ll need the Microsoft.Graph module, and the script installs it for you if it’s missing. Lab tenants only."
+      },
+      {
+        "type": "pre",
+        "text": "param( [switch]$DryRun ) # ───────────────────────────── Setup ───────────────────────────── $ErrorActionPreference = \"Continue\" $logFile = Join-Path $PSScriptRoot (\"IntuneBulkDelete_\" + (Get-Date -Format \"yyyyMMdd_HHmmss\") + \".log\") function Write-Log { param([string]$Message, [string]$Level = \"INFO\") $timestamp = Get-Date -Format \"yyyy-MM-dd HH:mm:ss\" $entry = \"[$timestamp] [$Level] $Message\" Add-Content -Path $logFile -Value $entry if ($Level -eq \"SUCCESS\") { Write-Host $entry -ForegroundColor Green } elseif ($Level -eq \"ERROR\") { Write-Host $entry -ForegroundColor Red } elseif ($Level -eq \"WARN\") { Write-Host $entry -ForegroundColor Yellow } else { Write-Host $entry -ForegroundColor Cyan } } # ───────────────────────── Graph Connection ────────────────────── Write-Log \"Checking Microsoft.Graph module...\" if (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Authentication)) { Write-Log \"Microsoft.Graph module not found. Installing...\" \"WARN\" Install-Module Microsoft.Graph -Scope CurrentUser -Force -AllowClobber } $scopes = @( \"DeviceManagementConfiguration.ReadWrite.All\", \"DeviceManagementServiceConfig.ReadWrite.All\", \"DeviceManagementManagedDevices.ReadWrite.All\", \"DeviceManagementApps.ReadWrite.All\" ) Write-Log \"Connecting to Microsoft Graph...\" Connect-MgGraph -Scopes $scopes -ErrorAction Stop Write-Log \"Connected to Microsoft Graph.\" \"SUCCESS\" # ────────────────────── Category Definitions ───────────────────── $categories = @( @{ Name = \"Device Configuration Profiles\"; Endpoint = \"/deviceManagement/deviceConfigurations\" } @{ Name = \"Settings Catalog Policies\"; Endpoint = \"/deviceManagement/configurationPolicies\" } @{ Name = \"Compliance Policies\"; Endpoint = \"/deviceManagement/deviceCompliancePolicies\" } @{ Name = \"Group Policy Configurations (ADMX)\"; Endpoint = \"/deviceManagement/groupPolicyConfigurations\" } @{ Name = \"Security Baselines / Intents\"; Endpoint = \"/deviceManagement/intents\" } @{ Name = \"PowerShell Platform Scripts\"; Endpoint = \"/deviceManagement/deviceManagementScripts\" } @{ Name = \"macOS Shell Scripts\"; Endpoint = \"/deviceManagement/deviceShellScripts\" } @{ Name = \"Proactive Remediations (Health Scripts)\"; Endpoint = \"/deviceManagement/deviceHealthScripts\" } @{ Name = \"Autopilot Deployment Profiles\"; Endpoint = \"/deviceManagement/windowsAutopilotDeploymentProfiles\" } @{ Name = \"Enrollment Configurations\"; Endpoint = \"/deviceManagement/deviceEnrollmentConfigurations\" } @{ Name = \"App Protection Policies (General)\"; Endpoint = \"/deviceAppManagement/managedAppPolicies\" } @{ Name = \"App Protection Policies (iOS)\"; Endpoint = \"/deviceAppManagement/iosManagedAppProtections\" } @{ Name = \"App Protection Policies (Android)\"; Endpoint = \"/deviceAppManagement/androidManagedAppProtections\" } @{ Name = \"App Config Policies (Managed Devices)\"; Endpoint = \"/deviceAppManagement/mobileAppConfigurations\" } @{ Name = \"App Config Policies (Managed Apps)\"; Endpoint = \"/deviceAppManagement/targetedManagedAppConfigurations\" } @{ Name = \"Windows Feature Update Profiles\"; Endpoint = \"/deviceManagement/windowsFeatureUpdateProfiles\" } @{ Name = \"Windows Quality Update Profiles\"; Endpoint = \"/deviceManagement/windowsQualityUpdateProfiles\" } @{ Name = \"Windows Driver Update Profiles\"; Endpoint = \"/deviceManagement/windowsDriverUpdateProfiles\" } @{ Name = \"macOS Custom Attribute Scripts\"; Endpoint = \"/deviceManagement/deviceCustomAttributeShellScripts\" } @{ Name = \"Notification Message Templates\"; Endpoint = \"/deviceManagement/notificationMessageTemplates\" } @{ Name = \"Assignment Filters\"; Endpoint = \"/deviceManagement/assignmentFilters\" } @{ Name = \"Role Scope Tags\"; Endpoint = \"/deviceManagement/roleScopeTags\" } @{ Name = \"MDM Windows Information Protection\"; Endpoint = \"/deviceAppManagement/mdmWindowsInformationProtectionPolicies\" } @{ Name = \"Windows Information Protection (WE)\"; Endpoint = \"/deviceAppManagement/windowsInformationProtectionPolicies\" } @{ Name = \"Apple Enrollment Profiles (DEP)\"; Endpoint = \"/deviceManagement/depOnboardingSettings\" } ) # ─────────────────────── Helper: Get All Items ─────────────────── function Get-AllGraphItems { param([string]$Uri) $items = @() $requestUri = \"https://graph.microsoft.com/beta\" + $Uri do { try { $response = Invoke-MgGraphRequest -Method GET -Uri $requestUri -ErrorAction Stop if ($response.value) { $items += $response.value } $requestUri = $response.'@odata.nextLink' } catch { Write-Log (\" Failed to GET \" + $requestUri + \" : \" + $_.Exception.Message) \"ERROR\" $requestUri = $null } } while ($requestUri) return $items } # ────────────────────────── Discovery Phase ────────────────────── Write-Host \"\" Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \" INTUNE BULK POLICY REMOVAL - DISCOVERY \" -ForegroundColor Magenta Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \"\" $allResults = @() foreach ($cat in $categories) { Write-Log (\"Scanning: \" + $cat.Name + \"...\") $items = Get-AllGraphItems -Uri $cat.Endpoint # Filter out default scope tag (id 0) for Role Scope Tags if ($cat.Endpoint -eq \"/deviceManagement/roleScopeTags\") { $items = $items | Where-Object { $_.id -ne \"0\" } } # Filter out built-in health scripts for Proactive Remediations if ($cat.Endpoint -eq \"/deviceManagement/deviceHealthScripts\") { $items = $items | Where-Object { $_.isGlobalScript -ne $true } } $count = 0 if ($items) { $count = @($items).Count } if ($count -gt 0) { Write-Log (\" Found \" + $count + \" item(s):\") \"WARN\" foreach ($item in $items) { if ($item.displayName) { $displayName = $item.displayName } elseif ($item.name) { $displayName = $item.name } else { $displayName = $item.id } Write-Host (\" - \" + $displayName) -ForegroundColor Gray } } else { Write-Log \" Found 0 items.\" } $allResults += [PSCustomObject]@{ Category = $cat.Name Endpoint = $cat.Endpoint Items = $items Count = $count } } # ───────────────────────── Summary Table ───────────────────────── Write-Host \"\" Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \" SUMMARY \" -ForegroundColor Magenta Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \"\" $totalItems = 0 foreach ($r in $allResults) { if ($r.Count -gt 0) { $color = \"Yellow\" } else { $color = \"DarkGray\" } $line = \" \" + $r.Category.PadRight(50) + $r.Count.ToString().PadLeft(5) + \" item(s)\" Write-Host $line -ForegroundColor $color $totalItems += $r.Count } Write-Host \"\" Write-Host (\" TOTAL: \" + $totalItems + \" item(s) found across \" + $allResults.Count + \" categories.\") -ForegroundColor White Write-Host \"\" if ($totalItems -eq 0) { Write-Log \"Nothing to delete. Tenant is clean!\" \"SUCCESS\" Disconnect-MgGraph | Out-Null exit 0 } # ───────────────────────── DryRun Check ────────────────────────── if ($DryRun) { Write-Host \"\" Write-Log \"[DRYRUN] Dry run complete. No items were deleted.\" \"WARN\" Write-Log \"[DRYRUN] Run without -DryRun to perform actual deletion.\" \"WARN\" Disconnect-MgGraph | Out-Null exit 0 } # ───────────────────────── Confirmation ────────────────────────── Write-Host \"\" Write-Host (\" WARNING: This will PERMANENTLY DELETE all \" + $totalItems + \" items listed above.\") -ForegroundColor Red Write-Host \" This action cannot be undone. Make sure you have a backup.\" -ForegroundColor Red Write-Host \"\" $confirm = Read-Host \" Do you want to proceed with deletion? Type YES to confirm\" if ($confirm -ne \"YES\") { Write-Log \"Deletion cancelled by user.\" \"WARN\" Disconnect-MgGraph | Out-Null exit 0 } # ────────────────────────── Deletion Phase ─────────────────────── Write-Host \"\" Write-Host \"================================================================\" -ForegroundColor Red Write-Host \" DELETING INTUNE POLICIES... \" -ForegroundColor Red Write-Host \"================================================================\" -ForegroundColor Red Write-Host \"\" $totalDeleted = 0 $totalFailed = 0 foreach ($r in $allResults) { if ($r.Count -eq 0) { continue } Write-Log (\"Deleting \" + $r.Count + \" item(s) from: \" + $r.Category + \"...\") foreach ($item in $r.Items) { if ($item.displayName) { $displayName = $item.displayName } elseif ($item.name) { $displayName = $item.name } else { $displayName = $item.id } $deleteUri = \"https://graph.microsoft.com/beta\" + $r.Endpoint + \"/\" + $item.id try { Invoke-MgGraphRequest -Method DELETE -Uri $deleteUri -ErrorAction Stop Write-Log (\" Deleted: \" + $displayName + \" (\" + $item.id + \")\") \"SUCCESS\" $totalDeleted++ } catch { Write-Log (\" Failed: \" + $displayName + \" (\" + $item.id + \") - \" + $_.Exception.Message) \"ERROR\" $totalFailed++ } } } # ──────────────────────── Final Summary ────────────────────────── Write-Host \"\" Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \" FINAL RESULTS \" -ForegroundColor Magenta Write-Host \"================================================================\" -ForegroundColor Magenta Write-Host \"\" Write-Host (\" Successfully deleted : \" + $totalDeleted) -ForegroundColor Green if ($totalFailed -gt 0) { $failColor = \"Red\" } else { $failColor = \"Green\" } Write-Host (\" Failed : \" + $totalFailed) -ForegroundColor $failColor Write-Host (\" Log file : \" + $logFile) -ForegroundColor Cyan Write-Host \"\" Write-Log (\"Bulk deletion complete. Deleted: \" + $totalDeleted + \" | Failed: \" + $totalFailed) Disconnect-MgGraph | Out-Null Write-Log \"Disconnected from Microsoft Graph.\" \"SUCCESS\""
+      },
+      {
+        "type": "h2",
+        "text": "The bigger picture"
+      },
+      {
+        "type": "p",
+        "text": "This started as a way to save myself an afternoon of clicking, and it does exactly that. But the thing I keep coming back to is that the interesting engineering was never the deletion. It was the discovery, the preview, the typed confirmation, and the log. That’s the same discipline you’d want in front of any bulk Graph operation, destructive or not: show me what you’re about to do, make me confirm it, write down what happened."
+      },
+      {
+        "type": "p",
+        "text": "If you build something like this for your own lab, the tenant check is the line I wouldn’t ship without."
+      },
+      {
+        "type": "p",
+        "text": "Have you been burned by a script running against the wrong tenant, or is your own teardown routine still six blades and a lot of patience?"
+      }
+    ],
+    "image": "/assets/post-572.png",
+    "id": 572,
+    "title": "I Built a Nuke Button for Intune",
+    "date": "13 Jul 2026",
+    "slug": "i-built-a-nuke-button-for-intune",
+    "url": "https://workswithai.online/2026/07/13/i-built-a-nuke-button-for-intune/"
+  },
+  {
+    "categories": [
+      "Intune"
+    ],
+    "minutes": 11,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "For years the Remote Help conversation with customers ended the same way. Someone would ask why the built-in Intune remote support tool wasn’t just there, I’d explain that it’s part of the Intune Suite and sits behind a separate add-on, and the interest would quietly evaporate. Nobody wanted another per-user line item to support a helpdesk feature they half-expected to already own."
+      },
+      {
+        "type": "p",
+        "text": "As of today that objection is mostly gone. From 1 July 2026, Microsoft folds a set of Intune Suite capabilities into Microsoft 365 E3 and E5 at no separate add-on cost, and Remote Help is one of them. It arrives alongside a list-price bump, with E3 going from $36 to $38 and E5 from $57 to $60 per user per month, so it isn’t free in the strict sense. But the add-on you used to buy on top is now part of the licence."
+      },
+      {
+        "type": "p",
+        "text": "I said “mostly” on purpose. The entitlement and the price change land on 1 July, but the feature itself rolls out gradually across the summer. Microsoft posts a 30-day notice in the Message Center before a given tenant is provisioned, and the rollout is due to finish by 1 August 2026. So depending on where your tenant sits in that wave, you might have Remote Help today, or you might be a couple of weeks out. And provisioning is not the same as usage. The capability landing at tenant level doesn’t switch anything on for your users. You still have to enable it, scope who can use it, and get the app onto devices. That last part is what this post is about."
+      },
+      {
+        "type": "h2",
+        "text": "What E3 actually gets, and what stays on E5"
+      },
+      {
+        "type": "p",
+        "text": "The split matters, because “Intune Suite is in E3 now” is doing a lot of work in some of the coverage. E3, through Enterprise Mobility + Security E3, picks up Remote Help, Advanced Analytics, and the full Intune Plan 2 (Microsoft Tunnel for MAM, specialty device management for things like AR/VR and meeting-room kit, and firmware-over-the-air updates for supported Zebra devices). The heavier security pieces stay on E5: Endpoint Privilege Management, Cloud PKI, and Enterprise App Management. If you’re on E3 and you wanted those, it’s still an add-on or a move to E5."
+      },
+      {
+        "type": "p",
+        "text": "One thing worth being clear about, because it trips up licensing conversations: eligibility is tied to the presence of an EMS E3 or Microsoft 365 E5 plan, not to tenant size or seat count, and not to whether you’ve moved to the full Microsoft 365 bundle. A customer on Office 365 E3 plus EMS E3 qualifies exactly the same way. If you’re already paying for the Remote Help add-on or the standalone Intune Suite, that charge doesn’t remove itself. You’ll want a licence review around your rollout window so you’re not paying twice for the same entitlement."
+      },
+      {
+        "type": "p",
+        "text": "Before you plan anything, it’s worth confirming the entitlement has actually reached your tenant rather than assuming the calendar date did it. A quick Graph check tells you:"
+      },
+      {
+        "type": "p",
+        "text": "Connect-MgGraph -Scopes “Organization.Read.All” Get-MgSubscribedSku | Select-Object SkuPartNumber, CapabilityStatus"
+      },
+      {
+        "type": "p",
+        "text": "Look for a SKU containing INTUNE_SUITE with a CapabilityStatus of Enabled. If it isn’t there yet, check your Message Center for the notice and give it time. A missing SKU is the most common reason the Remote Help options look greyed out in the admin center."
+      },
+      {
+        "type": "h2",
+        "text": "Turning it on and scoping who can help"
+      },
+      {
+        "type": "p",
+        "text": "Remote Help is disabled by default, and enabling it is a tenant-wide switch. In the Microsoft Intune admin center, go to Tenant administration > Remote Help, open the Settings tab, and choose Configure. Set Enable Remote Help to Enabled. While you’re there you’ll see two more options. Allow Remote Help to unenrolled devices is off by default and is what you’d turn on for BYOD or an exec’s personal machine. Disable chat lets you strip the in-session chat if you’d rather not have it. Save when you’re done."
+      },
+      {
+        "type": "p",
+        "text": "The Configure Remote Help panel: set Enable Remote Help to Enabled, then Save. Captured in a test tenant running the Remote Help trial."
+      },
+      {
+        "type": "p",
+        "text": "Give it a moment before you test. New or trial licences can take anywhere from 30 minutes to 8 hours to go fully active, and during that window a session can still report that Remote Help isn’t enabled even though you’ve just enabled it. That one has sent people chasing a problem that wasn’t there."
+      },
+      {
+        "type": "p",
+        "text": "Who can actually help, and what they’re allowed to do, runs entirely through Intune RBAC. The built-in Help Desk Operator role already carries the Remote Help permissions, so if that fits your model you can just use it. If you want tighter control, create a custom role under Tenant administration > Roles and grant the Remote help app permissions you want: View screen, Take full control, Elevation, and Unattended control, plus the Remote Tasks (Offer remote assistance) and Remote Assistance Connector (Read) permissions that the app needs to function. The permissions stack in a sensible way. Turning on Take full control also grants View screen, and turning on Elevation grants both. So think in terms of the highest level you want a given group to have."
+      },
+      {
+        "type": "p",
+        "text": "Assigning the role is where the scope actually bites. Open the role, go to Assignments, and choose Assign. The Admin Groups page is your helper security group, the people giving support. The Scope (Groups) page is who they’re allowed to help. If a sharer or their device falls outside a helper’s scope, that helper simply can’t connect. One gotcha for unenrolled devices: the All Devices scope doesn’t include them, so if you’re supporting unenrolled machines you need to assign a user scope group instead."
+      },
+      {
+        "type": "p",
+        "text": "Assigning the Help Desk Operator role. Admin Groups are your helpers; Scope Groups, the next step, are who they’re allowed to help."
+      },
+      {
+        "type": "h2",
+        "text": "Deploying the Remote Help app"
+      },
+      {
+        "type": "p",
+        "text": "Both ends of a session need the Remote Help app, helpers and sharers alike, so plan to get it onto every device that will give or receive support. Start by downloading remotehelpinstaller.exe from aka.ms/downloadremotehelp. From there you’ve got two routes onto your Windows fleet."
+      },
+      {
+        "type": "p",
+        "text": "The route that works on any Intune plan is to ship it as a Win32 app. Repackage remotehelpinstaller.exe into a .intunewin file with the Microsoft Win32 Content Prep Tool, then add it under Apps > All Apps > Create > Windows app (Win32). Set the install command to remotehelpinstaller.exe /quiet acceptTerms=1 and the uninstall command to remotehelpinstaller.exe /uninstall /quiet acceptTerms=1. If you’d rather manage versions yourself, append enableAutoUpdates=0 to the install command. Add a version-based detection rule so Intune reinstalls on any device running an older build, and assign it as Required to your helper and sharer groups. The installer pulls in the Microsoft Edge WebView2 runtime if it isn’t already there."
+      },
+      {
+        "type": "p",
+        "text": "If you’re on the Intune Suite, so E5, or E3 once your entitlement lands, the easier route is the Enterprise App Catalog. Remote Help is prepackaged there with Microsoft’s own install and detection settings, so you skip the packaging entirely, and you can switch on auto-update to have new versions roll out without you lifting a finger. Add it under Apps > Windows > Add > Windows catalog app (Win32) and assign it Required to the same groups. Winget covers one-off manual installs, macOS updates come through Microsoft AutoUpdate, and Android comes through the Play Store."
+      },
+      {
+        "type": "p",
+        "text": "Two routes onto Windows: repackage as a Win32 app on any plan, or pull Remote Help from the Enterprise App Catalog on the Intune Suite. Both land on helper and sharer devices."
+      },
+      {
+        "type": "p",
+        "text": "macOS needs one extra step that’s easy to forget. The app can’t share the screen or take control until you grant it the right privacy permissions, so you need a PPPC profile. Create it under Devices > Manage devices > Configuration > Create > macOS > Settings catalog, and grant Remote Help the Accessibility and Screen Capture services. Skip this and your Mac sessions will connect but do nothing useful, which is a confusing way to find out. Microsoft’s deploy doc has the exact service values if you want to copy them across."
+      },
+      {
+        "type": "p",
+        "text": "On the network side, both the helper and the sharer need to reach the Remote Help endpoints over port 443. Traffic goes to remotehelp.microsoft.com over RDP encrypted with TLS 1.2, and the endpoint set includes the Trouter host at *.trouter.communications.svc.cloud.microsoft. If you run tight egress filtering, pull the current FQDN list from the Microsoft Learn network endpoints page rather than guessing. It’s also worth confirming your Remote Help clients are landing on the current version (5.2.1037.0 at the time of writing) as it rolls out through your normal Intune update channels."
+      },
+      {
+        "type": "p",
+        "text": "Two more things to fold into your design rather than bolt on later. Conditional Access applies to Remote Help, so you can require MFA for helpers or gate access on a compliant device or a trusted location, which is a reasonable ask for anyone who can take full control of an endpoint. And unattended access, the ability to connect to a Windows device with nobody sitting in front of it, is a separate RBAC permission (Unattended control) reaching general availability from July 2026. It’s genuinely useful for after-hours work and shared kiosks, but it’s also the permission that turns Remote Help into something that looks a lot like the RMM tooling attackers love. Scope it to a small named group, keep Elevation off unless a role truly needs it, and actually read the audit logs it generates."
+      },
+      {
+        "type": "h2",
+        "text": "The order I’d actually do it in"
+      },
+      {
+        "type": "p",
+        "text": "Confirm the INTUNE_SUITE SKU is Enabled in your tenant before you promise anyone a date. Enable Remote Help under Tenant administration, and decide up front whether unenrolled devices are in scope. Sort the RBAC next, because a helper with no scope is a helper who can’t do anything: pick Help Desk Operator or a custom role, and assign it with a helper admin group and a sensible scope group. Then deploy the app to both helpers and sharers, remembering the macOS privacy profile if you support Macs. Confirm your network endpoints are open, run a real session between two test accounts in the same tenant, and check it lands in Tenant administration > Remote Help > Monitor with the session logged. Only then hand it to the helpdesk with a short bit of guidance, including the one limitation that surprises people: you can’t help a user in a different tenant, so cross-tenant and outsourced-helpdesk setups need their own plan."
+      },
+      {
+        "type": "p",
+        "text": "The Monitor tab, where active sessions and history are logged. Empty here because no session has run yet."
+      },
+      {
+        "type": "h2",
+        "text": "What a Remote Help session actually looks like"
+      },
+      {
+        "type": "p",
+        "text": "With it enabled, scoped and deployed, running a session is quick, and deliberately hard to spoof. Here’s the flow from end to end."
+      },
+      {
+        "type": "p",
+        "text": "The helper opens the Remote Help app, signs in, and under Give help chooses Get a security code. That produces an eight-digit code valid for ten minutes, which the helper passes to the user out of band, over the phone or a Teams message, never through the session itself."
+      },
+      {
+        "type": "p",
+        "text": "The user opens their own Remote Help app, or aka.ms/rh in a browser if they’re on an unenrolled or unsupported device, signs in with their work account, enters the code and submits. Both sides then see a trust screen showing the other person’s name, job title, company, photo and verified domain. That mutual identity check is the whole reason for the Entra sign-in, and it’s why Remote Help stays inside your own tenant: a helper cannot connect to a user in another organisation."
+      },
+      {
+        "type": "p",
+        "text": "The helper picks View screen or Take full control, and the user gets a prompt with the helper’s details and the requested level to Allow or Decline. If the user’s device is out of compliance, the helper sees a warning first. Not a block, just a heads-up before they start handling something sensitive."
+      },
+      {
+        "type": "p",
+        "text": "Inside the session the helper gets the tools you’d expect and a few you might not: a laser pointer and pen to annotate the screen, a persistent chat and instruction channel, and Task Manager access. If the helper holds the Elevation permission, a UAC prompt on the user’s device runs on the secure desktop, so the shared view pauses and greys out for a moment before the helper can interact with the elevated window through an admin session. The Enable secure credential prompting policy blocks that elevation entirely if you’d rather it never happen. Either side ends things with Leave, and the whole session lands in Tenant administration > Remote Help > Monitor and in the audit logs: who helped whom, on which device, for how long."
+      },
+      {
+        "type": "p",
+        "text": "A session end to end: the helper generates a code, the user enters it, both confirm identity on the trust screen, the user allows view or full control, and the toolbar opens."
+      },
+      {
+        "type": "h2",
+        "text": "The bigger picture"
+      },
+      {
+        "type": "p",
+        "text": "The real change here isn’t technical, it’s that the reason most people gave for not deploying Remote Help just disappeared. For a lot of tenants it stops being a thing you evaluate and build a business case for, and becomes a thing you might as well turn on properly. That’s a good outcome. It also means the care that used to be forced on you by the licence now has to come from you instead. When a capability sat behind a paid add-on, only the teams that really wanted it went through the RBAC and Conditional Access design. Now that it’s in the box, the scoping discipline is the part you have to supply, especially around full control and unattended access."
+      },
+      {
+        "type": "p",
+        "text": "If Remote Help lands in your tenant this summer, the question isn’t whether to use it, it’s whether you scope it like a tool that can take over any endpoint in the building. Because that’s what it is."
+      },
+      {
+        "type": "p",
+        "text": "How are you handling the helper RBAC? I’m curious whether people are leaning on the built-in Help Desk Operator role as-is, or building custom roles to keep elevation and unattended control on a much shorter leash."
+      },
+      {
+        "type": "p",
+        "text": "Reference: Microsoft’s announcement of the E3/E5 changes is on the Intune blog , and the configuration steps come from the Microsoft Learn Deploy Remote Help and Plan for Remote Help and Start a session docs."
+      }
+    ],
+    "image": "/assets/post-583.png",
+    "id": 583,
+    "title": "Remote Help Is Now In E3",
+    "date": "01 Jul 2026",
+    "slug": "remote-help-is-in-e3",
+    "url": "https://workswithai.online/2026/07/01/remote-help-is-in-e3/"
+  },
+  {
+    "categories": [
+      "AI News & Trends",
+      "Copilot & M365"
+    ],
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "I’ll be honest with you. The first time I let Copilot Cowork loose on a real task, I sat back like a kid watching a magic trick. You point it at a pile of files, walk away to make coffee, and come back to a finished result. Not a draft. Not a “here’s a starting point.” Done."
+      },
+      {
+        "type": "p",
+        "text": "And then it clicks: this thing now costs money every single time it runs. Per task. By the second, basically."
+      },
+      {
+        "type": "p",
+        "text": "So let’s get into what that actually means. As of June 16, 2026, Copilot Cowork is generally available worldwide, and it’s the first Copilot feature that bills you for what you use rather than for who you’ve licensed. If you run a Microsoft 365 tenant, it’s worth understanding the model before someone on your team falls in love with it the way I did and runs up a bill nobody planned for."
+      },
+      {
+        "type": "p",
+        "text": "So what even is it? Cowork isn’t another chatbot in a sidebar. It’s an agent that goes off and does long, messy, multi-step work on its own and brings back something actually finished. We’re talking about jobs like comparing thousands of files across two product versions, or pointing it at a stalled sales pipeline and getting back a ranked list of deals that are slipping, with the exact follow-up that went cold on each one. That’s genuinely useful, and it’s also genuinely expensive to run under the hood. Which is exactly why Microsoft didn’t fold it into a flat monthly price."
+      },
+      {
+        "type": "h2",
+        "text": "So what changed, and why it suddenly costs money"
+      },
+      {
+        "type": "p",
+        "text": "For two years, Copilot pricing was beautifully boring. You bought a seat, the user got the features, and finance knew what next month looked like down to the cent. Cowork throws that out. Every task you run gets priced on four things: which model did the work and how much of it, how much of your company’s data it had to pull in, how many tools or plugins it called, and how long the whole thing ran. The currency is something called Copilot Credits, and on pay-as-you-go one credit is one cent. Sounds tiny. It adds up faster than you’d think once people get hooked."
+      },
+      {
+        "type": "p",
+        "text": "The licensing stack is worth being precise about, because it shapes the whole cost picture. Cowork isn’t a standalone purchase. A user needs the full Microsoft 365 Copilot license first, the same per-user-per-month one that already covers Copilot Chat and Copilot in Word, Excel, PowerPoint, Outlook and Teams, plus the pre-built agents. Cowork then sits on top of that as a pay-per-use extra. So the real cost is two layers stacked together: a predictable monthly seat, plus variable credits on top. The practical consequence is that there’s no “give Cowork to a couple of power users without paying for full Copilot seats” route. If they’re using Cowork, they’re already carrying a seat."
+      },
+      {
+        "type": "p",
+        "text": "And the variable layer behaves in a way your old per-seat instincts will get wrong. From the preview program, Microsoft noticed tasks fall into three rough buckets. Light tasks pull in a couple of sources, do a bit of reasoning, produce one output, and stay cheap. Medium tasks draw on several sources, reason in a more structured way, and generate a few outputs. Heavy tasks aggregate broadly, reason deeply, and spit out a pile of outputs, and that’s where the credits really go. The thing to internalise is that ten quick light tasks can cost you less than one big heavy one. Your spend isn’t really about how many people are using Cowork or how often. It’s about what they’re asking it to do."
+      },
+      {
+        "type": "p",
+        "text": "One date to circle while you’re at it. Billing started on June 16, but there’s a grace window: if your tenant had even one person using Cowork in the Frontier preview between March 30 and June 16, you don’t get billed until July 1, 2026 . If that’s you, don’t waste the runway. Get your guardrails up before the real charges start, not after the first invoice makes someone’s eye twitch."
+      },
+      {
+        "type": "h2",
+        "text": "Where you actually configure all this"
+      },
+      {
+        "type": "p",
+        "text": "Microsoft shipped real controls at GA, not just a meter, and almost all of it lives in one place: Microsoft 365 admin center → Copilot → Cost Management ."
+      },
+      {
+        "type": "p",
+        "text": "That same Cost Management node is also where you switch the whole thing on. There’s a Get Started button that opens a side panel to activate your default spending policy, and that policy is what actually unlocks Cowork (and the Work IQ API) in your tenant. No policy, no Cowork. One thing to be careful about here: the billing method you pick on a policy is locked once the policy is created, so to change it you have to delete the policy and build a new one. Choose it deliberately the first time."
+      },
+      {
+        "type": "p",
+        "text": "From the same dashboard you create your spending policies, and this is where your hard caps come from. Each policy lets you pick the service, the billing method, the monthly credit cap, the scope (one shared limit across the whole policy, or a cap per individual user) and optional email alerts at a credit threshold you choose. When a user, group or tenant hits its limit, access to the metered services stops until credits reset on the first of the next month. To see what’s actually being spent, the Overview tab gives you real-time spend and remaining capacity, and the Consumption tab lets you drill into usage by user, group, service or agent so you can spot your heaviest users and biggest cost drivers."
+      },
+      {
+        "type": "p",
+        "text": "A policy doesn’t have to apply to everyone, and for a controlled rollout you’ll want to make sure it doesn’t. Under access groups you can switch from All users to Specific groups and scope the policy to selected directory groups, which is exactly how you fence Cowork off to a pilot population rather than the whole tenant. Specific individual users isn’t available yet (it’s marked coming soon), so for now targeting runs through security groups: if the people you want don’t already sit in one, create a group first and then point the policy at it."
+      },
+      {
+        "type": "p",
+        "text": "Before you activate, the setup gives you a summary of the whole policy in one place, so you can sanity-check the billing method, the spending limit, the user limits and the alert recipients before anything goes live."
+      },
+      {
+        "type": "p",
+        "text": "A couple of important settings sit outside that dashboard. Discovery, which controls whether users even see Cowork, is separate from billing, and that separation trips people up constantly. If you make Cowork discoverable but haven’t enabled billing, users can request access from inside the app and you approve case by case. If users suddenly can’t see Cowork after GA, it’s almost always the discovery setting plus policy gating rather than a bug. Model choice is another lever worth knowing about, since cheaper models mean cheaper tasks, and you turn individual models on or off under Microsoft 365 admin center → Copilot settings (there’s also a leaner model called Cowork 1 on the way, built to handle everyday tasks for a lot less). And if you own compliance, Cowork’s prompts, responses and artifacts all flow through Microsoft Purview for audit, eDiscovery, DSPM, Insider Risk and the rest, so that’s your surface."
+      },
+      {
+        "type": "p",
+        "text": "One last thing that’ll save you a headache: roles matter here. Setting or changing the billing method needs Global Administrator or Billing Administrator. Creating spending policies, limits and alerts can be done by an AI Administrator or License Administrator, but those roles can’t change the billing method. Sort out who holds what before you start clicking, or you’ll get halfway through and hit a wall. (Prices and exact blade labels are US-list and current as of writing. Buy through a CSP or Enterprise Agreement and your numbers may differ, and Microsoft is still rolling some of this out, so a label might shift under you.)"
+      },
+      {
+        "type": "h2",
+        "text": "How to roll this out without surprises"
+      },
+      {
+        "type": "p",
+        "text": "The safe rollout order is straightforward, and it matters because the costly mistakes here are all front-loaded. Cowork is off by default, so start there and leave it off until the rest is in place. Pick a small pilot group with a clear use case rather than the whole knowledge-worker population. Set hard caps at the group and user level before anyone gets access, and switch on alerts pointed at whoever owns the budget. Let the pilot run for a few weeks and watch the Consumption tab, because that’s how you learn the real light, medium and heavy mix for those users, and that mix is your whole cost model. You can’t guess it accurately up front."
+      },
+      {
+        "type": "p",
+        "text": "Once you have real numbers, model the spend with Microsoft’s estimator spreadsheet (search “Customer Cowork Estimator”) using your actual figures rather than the example ones, then decide between pay-as-you-go and the committed P3 option. Pay-as-you-go at a cent a credit keeps you flexible; committing to a volume up front gets you a discount if your estimate is solid. Expand access last, once the guardrails are proven on a group you were watching closely. The whole point is that nobody discovers the cost the hard way."
+      },
+      {
+        "type": "h2",
+        "text": "The bigger picture"
+      },
+      {
+        "type": "p",
+        "text": "Cowork’s pricing is a sneak peek at where Microsoft 365 is heading. We’re moving from “buy a seat, get the features” to “pay for the work the agent actually does.” Per-seat licensing isn’t going anywhere, but there’s now a usage-based layer sitting on top of it, and that layer quietly rewards the teams that govern it on purpose and punishes the ones that don’t. The orgs that win with Cowork won’t be the ones who turned it on fastest. They’ll be the ones who turned it on deliberately, with caps and visibility and a real sense of what a heavy task costs them."
+      },
+      {
+        "type": "p",
+        "text": "Get addicted if you want. I clearly did. Just put the guardrails up first."
+      },
+      {
+        "type": "p",
+        "text": "How are you handling Cowork billing in your tenant? Flipping it on for everyone, or starting with a tight little pilot? I’d love to know how others are setting their caps."
+      }
+    ],
+    "image": "/assets/post-520.jpg",
+    "id": 520,
+    "title": "I Got Addicted to Copilot Cowork.",
+    "date": "25 Jun 2026",
+    "slug": "i-got-addicted-to-copilot-cowork",
+    "url": "https://workswithai.online/2026/06/25/i-got-addicted-to-copilot-cowork/"
+  },
+  {
+    "categories": [
+      "AI Tools",
+      "Copilot & M365",
+      "Microsoft AI"
+    ],
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "h2",
+        "text": "A Year Ago I’d Have Scheduled This Tool. This Time I Built It in an Afternoon."
+      },
+      {
+        "type": "p",
+        "text": "A customer had about 30 new devices that all needed a Windows Autopilot Group Tag before they could go out the door. The Group Tag decides which deployment profile a device lands in, which means it drives everything that follows: the apps, the policies, the whole out-of-box experience. So it matters, and it has to be right."
+      },
+      {
+        "type": "p",
+        "text": "The catch is that setting it in the Intune portal is a click-per-device job. Thirty devices is roughly an hour of clicking through the same screens, and the moment a next batch shows up you start over."
+      },
+      {
+        "type": "p",
+        "text": "A year ago my options would have been to do it by hand, or ask a developer to build something and wait my turn. This time I built the tool myself in an afternoon, with Claude Opus 4.8 doing the actual typing. I want to walk you through how that went, because the finished tool isn’t the interesting part. The path to it is."
+      },
+      {
+        "type": "h2",
+        "text": "Start with the problem, not the code"
+      },
+      {
+        "type": "p",
+        "text": "I didn’t open with a request for code. I described what I needed in plain terms. A tool that bulk-assigns Autopilot Group Tags. It should take a list of serial numbers, ideally from a CSV, look the devices up in the tenant, and let me apply a tag to all of them at once. And it had to run on a normal Windows machine with no installer, because that’s the reality of working on a customer’s environment."
+      },
+      {
+        "type": "p",
+        "text": "From that, Claude proposed the shape: a small PowerShell app with a WinForms interface, talking straight to the Microsoft Graph API. Which matched what I had in my head. PowerShell runs everywhere in our line of work, and Graph is where Autopilot lives. So I had a plan before a single line of code existed, which is the part of this I’d underline if I underlined anything."
+      },
+      {
+        "type": "h2",
+        "text": "The first version met the real tenant and lost"
+      },
+      {
+        "type": "p",
+        "text": "The first working version looked up devices by asking Graph to filter server-side, something like “give me the device where the serial number contains this value.” Clean on paper."
+      },
+      {
+        "type": "p",
+        "text": "Then I ran it against the real tenant, and it broke."
+      },
+      {
+        "type": "p",
+        "text": "That’s the bit that usually gets left out of these stories. The first version rarely survives contact with a real environment. The windowsAutopilotDeviceIdentities endpoint didn’t handle that contains filter reliably, and it got worse with the dashed serial numbers our virtual machines use, the long ones with blocks of digits split by dashes."
+      },
+      {
+        "type": "p",
+        "text": "So I fed back exactly what failed, showed what the serials actually looked like, and changed the whole approach. Instead of filtering on the server, the tool now pulls every Autopilot device in the tenant once, pages through the results properly by following @odata.nextLink until there’s nothing left, and matches locally."
+      },
+      {
+        "type": "p",
+        "text": "I made the matching deliberately forgiving, in three passes. Exact match first. If that misses, strip out every dash and space and compare again. If that still misses, fall back to a partial match on the normalized value. That handles the messy reality of how serials get typed, pasted, and formatted differently in five different places. After that change, lookups worked every time."
+      },
+      {
+        "type": "h2",
+        "text": "The wall I didn’t see coming: authentication"
+      },
+      {
+        "type": "p",
+        "text": "This was the bigger one, and the most interesting."
+      },
+      {
+        "type": "p",
+        "text": "The tool needs to sign in to Graph. The normal route is Microsoft’s default sign-in app, where the user logs in interactively and the tool acts on their behalf. The customer’s tenant blocked that default app. On top of that, their own app registration had no redirect URI configured, and I couldn’t add one. Interactive sign-in needs that redirect URI, so that door was shut too."
+      },
+      {
+        "type": "p",
+        "text": "I pasted the actual sign-in errors and explained what was and wasn’t allowed in their environment. Working through it, I landed on a different model: app-only authentication, also called client credentials. Instead of a user signing in, the app authenticates as itself with a client secret. Their app registration already had the right application permission for it, DeviceManagementServiceConfig.ReadWrite.All , with admin consent. Which is exactly what app-only needs, and it sidestepped both blockers at once."
+      },
+      {
+        "type": "p",
+        "text": "The trade-off with app-only is that you’re holding a secret, and a secret in a script is a liability. So I handled it carefully. The secret never lives in the code. The user types it once at runtime in a masked field, and if they choose to remember it, it gets stored encrypted on that specific machine for that specific Windows account, in a location kept well out of any synced folder. I knew the environment and the security expectations, and I leaned on Claude for the implementation patterns to match them."
+      },
+      {
+        "type": "p",
+        "text": "That solved the sign-in problem, but it isn’t a free win, and I think it’s worth being straight about that. When you authenticate as the app instead of as a user, the tool acts with the app’s permissions across the whole tenant, regardless of who’s running it. The convenience is obvious. So is the risk: anyone who can launch the tool with that secret can change Group Tags tenant-wide, and the actions tie back to the app, not to a person. You lose the per-user accountability you normally rely on."
+      },
+      {
+        "type": "p",
+        "text": "That’s why the secret handling matters as much as it does, and why the secret has a hard expiry rather than living forever. For a contained provisioning run, one person, a tightly held secret, app-only was the pragmatic call. For wider or recurring use by a team, the more responsible model is delegated access scoped to a security group. Each person signs in as themselves, acts within their own Intune rights, and every change is traceable to a real account. That’s the direction I’d take this if more than one person needed it, and it’s a decent reminder that the convenient path and the accountable path aren’t always the same path."
+      },
+      {
+        "type": "h2",
+        "text": "A working script isn’t a tool yet"
+      },
+      {
+        "type": "p",
+        "text": "A script that runs isn’t the same as a tool someone wants to use. So I spent real time on the interface."
+      },
+      {
+        "type": "p",
+        "text": "What came out is a single window with a clear flow: connect, paste or import your serial numbers, load the devices, then a results grid where you tick the ones you want and apply the tag. The grid lets you edit the tag per device, so you’re not locked into one value for the whole batch. A CSV import maps a SerialNumber and optional GroupTag column straight in. A live search filters the loaded devices as you type, using the same dash-and-space-insensitive matching as the lookup, so finding one device in a long list is instant."
+      },
+      {
+        "type": "p",
+        "text": "The actual write back to Intune is one focused call per device, a POST to the device’s updateDeviceProperties with the new group tag. Everything else in the tool exists to make getting to that one call fast, safe, and hard to fumble."
+      },
+      {
+        "type": "h2",
+        "text": "What actually changed"
+      },
+      {
+        "type": "p",
+        "text": "The finished tool does in about 30 seconds what used to eat an hour. Connect, import, select, apply, done. One file with a launcher, no installer, no dependencies beyond a single Graph module it installs itself if it’s missing."
+      },
+      {
+        "type": "p",
+        "text": "But the tool is almost beside the point. The shift is in the path I just walked you through. I was the one who knew the customer, ran it against reality, spotted why the filter and the sign-in were failing, and decided what was good enough to ship. Claude turned that knowledge into working code and caught the technical traps before I hit them. It even wrote the documentation, the README and the handoff notes, the work I’d normally skip because there’s never time."
+      },
+      {
+        "type": "p",
+        "text": "That’s the real change. Building a small, specific, internal tool used to be a project you had to justify and schedule. Now it’s something you can do between two meetings, as the person who actually understands the problem."
+      },
+      {
+        "type": "p",
+        "text": "And that’s what this is really about. Not whether AI can write code, but what it changes about how we work once it can."
+      },
+      {
+        "type": "p",
+        "text": "If you’ve built something like this for your own tenant, I’d like to know where you landed on the auth question, because that’s the decision I went back and forth on most. Delegated and accountable, or app-only and quick?an."
+      }
+    ],
+    "image": "/assets/post-438.png",
+    "id": 438,
+    "title": "The Hour-Long Intune Task I Replaced in 30 Seconds",
+    "date": "18 Jun 2026",
+    "slug": "how-i-built-a-bulk-autopilot-group-tag-tool-with-powershell-and-the-graph-api",
+    "url": "https://workswithai.online/2026/06/18/how-i-built-a-bulk-autopilot-group-tag-tool-with-powershell-and-the-graph-api/"
+  },
+  {
+    "categories": [
+      "AI News & Trends"
+    ],
+    "minutes": 5,
+    "blocks": [
+      {
+        "type": "h2",
+        "text": "The macOS Registration Prompt Everyone Ignores. Microsoft Finally Killed It."
+      },
+      {
+        "type": "p",
+        "text": "If you’ve rolled out Platform SSO on macOS, you know exactly how this goes. The Mac enrolls through ADE, the user lands on the desktop, and then the real onboarding starts. They wait for the registration banner, miss it or swipe it away, and a day later there’s a ticket that reads “I’m signed in but Outlook won’t connect.” The device sits half-registered, Conditional Access isn’t satisfied, and nobody’s quite sure why."
+      },
+      {
+        "type": "p",
+        "text": "That gap is the thing this update closes. And it’s part of a quieter stretch of Microsoft releases that, taken together, do more for day-to-day management than the splashier announcements usually manage. Three things worth your attention right now: a cleaner macOS enrollment, better app visibility on Windows, and a faster Copilot model. None of them will trend. All three I’d turn on."
+      },
+      {
+        "type": "h2",
+        "text": "Platform SSO now runs inside macOS Setup Assistant"
+      },
+      {
+        "type": "p",
+        "text": "Here’s what changed. Platform SSO registration can now happen during Automated Device Enrollment, inside Setup Assistant, before the user ever reaches the desktop. The device registers with Entra ID, the SSO credential gets provisioned, and the user arrives at the desktop already authenticated with Conditional Access satisfied. No banner to chase. No second act."
+      },
+      {
+        "type": "p",
+        "text": "Where you actually set this up: it’s three policies that have to work together, and the catch is that all three need to land on the same static user groups. Get the targeting wrong and enrollment just fails."
+      },
+      {
+        "type": "p",
+        "text": "First, the Platform SSO settings catalog policy. In the Intune admin center, go to Devices → Manage devices → Configuration → Create → New policy, pick macOS and Settings catalog, then under Authentication → Extensible single sign-on → Platform SSO set “Enable Registration During Setup” to Enabled. Second, deploy Company Portal 5.2604.0 or newer as a line-of-business app, since that’s what carries the Microsoft Enterprise SSO extension. Third, your ADE enrollment profile needs Setup Assistant with modern authentication, with “Await final configuration” set to Yes."
+      },
+      {
+        "type": "p",
+        "text": "A few things worth flagging before you roll it out. This is macOS 26 and newer only, so older fleets stay on the post-desktop flow for now. It’s static user groups, not dynamic groups and not device groups, which trips people up precisely because so much else in Intune leans on dynamic membership. And users still sign in at least twice during Setup Assistant, once to kick off enrollment and once to authenticate Company Portal and pull the SSO extension. Microsoft says a single sign-in version is coming. Until then, put a line in your rollout comms so people don’t assume the second prompt means something broke. If you’re on Smart Card auth, registration still can’t finish during Setup Assistant, so that scenario stays on the desktop path."
+      },
+      {
+        "type": "h2",
+        "text": "Windows app inventory worth actually looking at"
+      },
+      {
+        "type": "p",
+        "text": "The enhanced app inventory for Windows 10 and 11 went generally available with the May update, and it’s a real step up from Discovered apps. You get multiple syncs a day instead of the old weekly refresh, delta uploads so you’re not hauling the full list every time, and far richer metadata per app: install paths, install dates, sizes, architecture, uninstall commands, and per-user versus per-machine scope. It also captures apps across every profile that’s signed into a device, which finally makes inventory on shared machines trustworthy."
+      },
+      {
+        "type": "p",
+        "text": "Unlike Discovered apps, this one doesn’t just switch itself on. You enable it with a Properties catalog policy. In the Intune admin center, go to Devices → Manage devices → Configuration → Create → New policy, choose Windows 10 and later, profile type Properties catalog, then add ApplicationProperties and pick what you want to collect. Assign it to device groups rather than user groups. Inventory is about the endpoint, not whoever happens to be logged in, and device targeting is what makes the multi-user collection actually work. The data shows up on the All apps page for each device, or under Tools and reports if you’ve turned on the new device view."
+      },
+      {
+        "type": "p",
+        "text": "One limitation to plan around: the enhanced data is portal-only right now. It isn’t exposed through Graph yet, so if you’ve got automation or external reporting pulling from Discovered apps today, you can’t repoint it at this. Microsoft has signalled Graph support later in 2026. And Discovered apps is on its way out, the deprecation banner is already up, though both features run in parallel for now, so there’s no rush to rip anything out."
+      },
+      {
+        "type": "h2",
+        "text": "GPT-5.5 Instant lands in Microsoft 365 Copilot"
+      },
+      {
+        "type": "p",
+        "text": "GPT-5.5 Instant is now rolling out in Microsoft 365 Copilot. In Copilot Chat it shows up as “GPT-5.5 Quick response” in the model selector under GPT. Licensed Microsoft 365 Copilot users get priority access, everyone else gets standard access. If you build agents, it’s in Copilot Studio early release environments as GPT-5.5 Chat, and in Microsoft Foundry for developers."
+      },
+      {
+        "type": "p",
+        "text": "It builds on GPT-5.3 Instant, and the practical difference is in tone and speed rather than benchmark bragging rights. Responses are more direct, with less verbosity and fewer unnecessary follow-up questions, so you reach a usable answer with less back and forth. Image handling is better, which matters more than it sounds when half your prompts involve a screenshot of an error or a chart someone pasted in. STEM and technical content improved too."
+      },
+      {
+        "type": "p",
+        "text": "There’s a slower-burning point sitting underneath these model drops. Each one widens the gap between licensed and unlicensed Copilot. Priority access to the newer, faster model isn’t a footnote on a feature list anymore, it’s a difference your licensed users feel during the day. If you’re building the internal case for broader Copilot adoption, that’s a more concrete argument than another capabilities slide."
+      },
+      {
+        "type": "h2",
+        "text": "The bigger picture"
+      },
+      {
+        "type": "p",
+        "text": "None of this is the kind of update that gets a keynote. But a macOS enrollment that just works, app inventory you can actually trust, and a Copilot model that wastes less of your time are exactly the changes that compound. The flashy features get the attention. The boring ones are what make Monday quieter."
+      },
+      {
+        "type": "p",
+        "text": "If I were picking where to start, it’d be the macOS one for any team running a Mac fleet, since it removes a whole category of ticket. The app inventory policy is ten minutes of setup for visibility you’ll keep reaching for. Copilot’s update needs nothing from you, it just shows up."
+      },
+      {
+        "type": "p",
+        "text": "If you’ve already switched on Platform SSO during ADE, I’m curious how the double sign-in is landing with your users in practice, since that’s the one rough edge left in an otherwise clean flow. Drop a note"
+      }
+    ],
+    "image": "/assets/post-402.png",
+    "id": 402,
+    "title": "Microsoft Updates Worth Knowing: May 2026",
+    "date": "16 May 2026",
+    "slug": "microsoft-updates-worth-knowing-platform-sso-for-macos-app-inventory-and-gpt-5-5-instant",
+    "url": "https://workswithai.online/2026/05/16/microsoft-updates-worth-knowing-platform-sso-for-macos-app-inventory-and-gpt-5-5-instant/"
+  },
+  {
+    "categories": [
+      "Copilot & M365"
+    ],
+    "minutes": 5,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "If you’ve spent any time with Microsoft 365 Copilot, you already know it’s great at answering questions and drafting things. Ask it to summarize a thread, rewrite a paragraph, or pull together a status update, and it’s done in seconds."
+      },
+      {
+        "type": "p",
+        "text": "But that’s only half of the work most of us do in a day. The other half is the follow-through : rescheduling the meetings, building the deck, sending the email, updating the spreadsheet, coordinating the next step. That’s where the new wave of Copilot is heading, and Copilot Cowork is Microsoft’s name for it."
+      },
+      {
+        "type": "h2",
+        "text": "What is Copilot Cowork?"
+      },
+      {
+        "type": "p",
+        "text": "Copilot Cowork is a new capability inside Microsoft 365 Copilot that lets you delegate entire tasks , not just ask questions. Instead of prompting Copilot turn-by-turn, you describe the outcome you want and Cowork goes off and does the work across Outlook, Teams, Excel, Word, PowerPoint, and the rest of Microsoft 365."
+      },
+      {
+        "type": "p",
+        "text": "Microsoft announced it in March 2026, framing it as “the era of Copilot execution.” In practice, that means Copilot can now:"
+      },
+      {
+        "type": "li",
+        "text": "Build a plan from your request"
+      },
+      {
+        "type": "li",
+        "text": "Pull in the right context from your emails, meetings, files, and chats"
+      },
+      {
+        "type": "li",
+        "text": "Take real actions on your behalf"
+      },
+      {
+        "type": "li",
+        "text": "Check in when it needs your input"
+      },
+      {
+        "type": "li",
+        "text": "Keep going in the background while you focus on something else"
+      },
+      {
+        "type": "p",
+        "text": "The engine behind this is something Microsoft calls Work IQ , the layer that reads signals across your Microsoft 365 environment so Cowork can act with the same understanding of context that you have when you start your day."
+      },
+      {
+        "type": "h2",
+        "text": "How it actually works"
+      },
+      {
+        "type": "p",
+        "text": "Cowork follows a simple pattern: intent, plan, action, checkpoint ."
+      },
+      {
+        "type": "li",
+        "text": "You describe the outcome. Not a prompt, not a step-by-step instruction. Just what you want to be true at the end. “Clean up next week’s calendar and protect Wednesday morning for the proposal.”"
+      },
+      {
+        "type": "li",
+        "text": "Cowork turns it into a plan. It breaks the work down, identifies what it needs to do, and what sources it has to pull from."
+      },
+      {
+        "type": "li",
+        "text": "It runs in the background. Tasks keep moving even when you switch devices or close your laptop. Microsoft is hosting these in a protected, sandboxed cloud environment so the work is durable."
+      },
+      {
+        "type": "li",
+        "text": "It checkpoints with you. Before applying anything that changes the world, like sending a message, declining a meeting, or sharing a file, Cowork surfaces its recommendation. You approve, edit, or pause."
+      },
+      {
+        "type": "li",
+        "text": "You stay in control. Every action is auditable. Identity, permissions, and compliance policies apply by default."
+      },
+      {
+        "type": "p",
+        "text": "You can have multiple tasks in flight at the same time. That’s the part that changes the rhythm of the day: instead of context-switching between ten small jobs, you hand them off and check back when each one needs you."
+      },
+      {
+        "type": "h2",
+        "text": "Four examples worth knowing"
+      },
+      {
+        "type": "p",
+        "text": "Microsoft’s launch post walked through four scenarios that show what “execution” actually looks like:"
+      },
+      {
+        "type": "p",
+        "text": "1. Calendar cleanup. Cowork reviews your Outlook week, asks what you’re trying to prioritize, flags conflicts and low-value meetings, then, with your approval, accepts, declines, or reschedules them. It can drop in focus blocks and even send a prep doc ahead of a meeting."
+      },
+      {
+        "type": "p",
+        "text": "2. Meeting packet preparation. Hand off a customer meeting end-to-end. Cowork pulls inputs from email, meetings, and files; schedules prep time on your calendar; and produces a connected set of deliverables: a briefing document, supporting analysis, and a client-ready deck, all saved in Microsoft 365 so your team can refine it together."
+      },
+      {
+        "type": "p",
+        "text": "3. Company research. Cowork gathers earnings reports, SEC filings, analyst commentary, and news, organizes findings with citations, and packages everything into an executive summary, a structured research memo, and an Excel workbook with labeled tabs."
+      },
+      {
+        "type": "p",
+        "text": "4. Launch planning. For a product launch, Cowork builds a competitive comparison in Excel, a value proposition document, a customer pitch deck, and a milestone plan with owners and next steps. Coordinated, not stitched together from one-off prompts."
+      },
+      {
+        "type": "p",
+        "text": "The common thread: Cowork isn’t just creating content. It’s coordinating the work around the content."
+      },
+      {
+        "type": "h2",
+        "text": "Built for the enterprise"
+      },
+      {
+        "type": "p",
+        "text": "This is the part that matters most for the clients I work with. Cowork runs entirely within Microsoft 365’s existing security and governance boundaries:"
+      },
+      {
+        "type": "li",
+        "text": "Identity and permissions apply by default. Cowork can only see and act on what you can see and act on."
+      },
+      {
+        "type": "li",
+        "text": "Compliance policies carry through to every action."
+      },
+      {
+        "type": "li",
+        "text": "Actions and outputs are auditable , so admins have a trail."
+      },
+      {
+        "type": "li",
+        "text": "Sandboxed execution keeps long-running tasks safely isolated."
+      },
+      {
+        "type": "p",
+        "text": "There’s also an interesting model story underneath. Microsoft worked closely with Anthropic to bring the technology behind Claude Cowork into Microsoft 365 Copilot. Microsoft’s pitch is that Copilot isn’t locked to a single model family. It picks the right model for the job, whoever built it."
+      },
+      {
+        "type": "h2",
+        "text": "Why this matters"
+      },
+      {
+        "type": "p",
+        "text": "For years, the productivity-AI conversation has been about assistance : faster drafting, faster searching, faster summarizing. Cowork shifts the conversation to delegation . That’s a meaningful change in how work flows, and it’s the direction every serious AI productivity tool is heading."
+      },
+      {
+        "type": "p",
+        "text": "For organizations rolling out Copilot today, Cowork is a signal worth paying attention to. The teams that get the most out of it will be the ones that have already done the foundational work: clean permissions, well-governed content, and a culture where people are comfortable handing off tasks and reviewing the result rather than doing every step themselves."
+      },
+      {
+        "type": "h2",
+        "text": "How to get started"
+      },
+      {
+        "type": "p",
+        "text": "As of March 2026, Cowork is in Research Preview with a limited set of customers. Microsoft has said broader availability is coming through the Frontier program in late March 2026. If you’re in an organization on the Microsoft 365 Copilot Frontier track, this is the moment to put your hand up."
+      },
+      {
+        "type": "p",
+        "text": "The era of Copilot answering questions isn’t over. It’s just no longer the headline. The headline now is Copilot doing the work."
+      }
+    ],
+    "image": "/assets/post-357.png",
+    "id": 357,
+    "title": "Copilot Cowork: When AI Stops Chatting and Starts Doing",
+    "date": "13 May 2026",
+    "slug": "copilot-cowork-when-ai-stops-chatting-and-starts-doing",
+    "url": "https://workswithai.online/2026/05/13/copilot-cowork-when-ai-stops-chatting-and-starts-doing/"
+  }
+]
