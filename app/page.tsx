@@ -1,4 +1,54 @@
-import {ArrowRight,ArrowUpRight} from 'lucide-react';
-import {posts,articleUrl} from '@/lib/content';
-import {MagazineRail,EntryRow,ToolShelf} from '@/components/magazine';
-export default function Home(){const feature=posts[0];return <main id="main" className="shell magazine"><div className="magazine-caption"><h1>Notes from the modern workplace.</h1><span>ENDPOINTS · SECURITY · AUTOMATION · AI</span></div><div className="magazine-layout"><MagazineRail/><div className="mag-content"><div className="mag-lead-grid"><article className="mag-feature"><div className="feature-heading"><span className="section-label">IN FOCUS</span><span>{feature.date}</span></div><a href={articleUrl(feature)} className="mag-feature-image" aria-label={feature.title}><img src={feature.image} width="800" height="450" alt="" fetchPriority="high"/></a><div className="feature-category">{feature.categories.join(' / ')}</div><h2><a href={articleUrl(feature)}>{feature.title}</a></h2><p>{feature.summary}</p><a href={articleUrl(feature)} className="feature-read">Read the entry <ArrowUpRight size={17}/><span>{feature.minutes} min read</span></a></article><aside className="recent-column"><h2 className="section-label">RECENTLY LOGGED</h2>{posts.slice(1,4).map((post,i)=><article className="recent-item" key={post.id}><div className="recent-number">0{i+1}</div><div><span className="recent-category">{post.categories[0]}</span><h3><a href={articleUrl(post)}>{post.title}</a></h3><div className="recent-date">{post.date} <span>·</span> {post.minutes} min</div></div></article>)}<a className="recent-all" href="/blog">Every entry <ArrowRight size={16}/></a></aside></div><div className="mag-lower-grid"><section className="journal"><div className="journal-heading"><h2>The working log</h2><a href="/blog">View all <ArrowUpRight size={16}/></a></div>{posts.slice(3).map(post=><EntryRow post={post} key={post.id}/>)}</section><ToolShelf/></div></div></div></main>;}
+import { ArrowRight, Bot, Laptop, ShieldCheck, Workflow } from 'lucide-react';
+import { ContributionCard } from '@/components/site-parts';
+import { posts } from '@/lib/content';
+
+const domains = [
+  { name: 'Endpoints', icon: Laptop, copy: 'Deployment, management and experience across Windows, macOS and mobile.' },
+  { name: 'Security', icon: ShieldCheck, copy: 'Identity, access and practical controls for a safer workplace.' },
+  { name: 'Automation', icon: Workflow, copy: 'Repeatable workflows and tools that remove routine admin work.' },
+  { name: 'AI & Copilot', icon: Bot, copy: 'Useful applications of AI across Microsoft 365 and daily work.' },
+] as const;
+
+export default function Home() {
+  const selected = [posts.find((p) => p.type === 'Guide'), posts.find((p) => p.type === 'Build'), posts.find((p) => p.type === 'Insight')].filter(Boolean) as typeof posts;
+  return (
+    <main id="main">
+      <section className="home-intro shell">
+        <div className="intro-copy">
+          <span className="micro-label">Microsoft workplace field manual</span>
+          <h1>Practical knowledge for the Microsoft workplace.</h1>
+          <p>Clear guides, tested builds and grounded insights for people working with endpoints, security, automation and AI.</p>
+          <div className="intro-actions">
+            <a className="button" href="/knowledge">Explore the knowledge base <ArrowRight size={17} /></a>
+            <a className="plain-link" href="/tools">Browse practical tools</a>
+          </div>
+        </div>
+        <aside className="author-note">
+          <img src="/assets/jewelry.jpg" alt="Jewelry Kenepa" width="72" height="72" />
+          <div><span className="micro-label">From the field</span><p>Tested, built and documented by <a href="/about">Jewelry Kenepa</a>.</p></div>
+        </aside>
+      </section>
+      <section className="domain-section shell" aria-labelledby="domains-heading">
+        <div className="section-kicker"><span>01</span><h2 id="domains-heading">Knowledge domains</h2></div>
+        <div className="domain-grid">
+          {domains.map(({ name, icon: Icon, copy }, index) => (
+            <a className="domain-card" key={name} href={`/knowledge?topic=${encodeURIComponent(name)}`}>
+              <div className="domain-icon"><Icon size={23} /></div><span>0{index + 1}</span><h3>{name}</h3><p>{copy}</p><strong>Explore <ArrowRight size={15} /></strong>
+            </a>
+          ))}
+        </div>
+      </section>
+      <section className="selected-section shell" aria-labelledby="selected-heading">
+        <div className="section-heading">
+          <div><span className="micro-label">Selected contributions</span><h2 id="selected-heading">Start with something useful.</h2></div>
+          <a className="plain-link" href="/knowledge">View all eight contributions <ArrowRight size={16} /></a>
+        </div>
+        <div className="contribution-grid">{selected.map((post) => <ContributionCard key={post.id} post={post} />)}</div>
+      </section>
+      <section className="principles shell">
+        <div><span className="micro-label">The standard</span><h2>Useful after the tab is closed.</h2></div>
+        <p>Every contribution starts with a real workplace question. The goal is material you can understand, test and apply in your own environment.</p>
+      </section>
+    </main>
+  );
+}

@@ -1,5 +1,38 @@
-import {ArrowUpRight,ArrowRight,FileCode2} from 'lucide-react';
-import {posts,articleUrl} from '@/lib/content';
-import {MagazineRail} from '@/components/magazine';
-export const metadata={title:'Scripts & tools'};
-export default function Tools(){const tools=posts.filter(p=>[572,438].includes(p.id));return <main id="main" className="shell magazine"><div className="magazine-caption"><h1>Scripts & tools</h1><span>BUILT TO SOLVE A REAL PROBLEM</span></div><div className="magazine-layout"><MagazineRail/><div className="tools-library"><header><span className="section-label">THE TOOLBOX / 02 ENTRIES</span><h2>A few things I’ve built.</h2><p>Small utilities for the Microsoft workplace. The problem, the approach and the code behind it.</p></header><div className="tool-table">{tools.map(post=><article className="tool-record" key={post.id}><div className="tool-file-icon"><FileCode2 size={25}/></div><div className="tool-record-body"><div className="row-meta"><span>PowerShell</span><span>Microsoft Graph</span><span>Intune</span></div><h3><a href={articleUrl(post)}>{post.id===572?'Intune tenant cleanup':'Windows Autopilot group tags'}</a></h3><p>{post.summary}</p><div className="tool-record-date">{post.date} · By Jewelry Kenepa</div></div><a className="tool-guide" href={articleUrl(post)}>Build notes <ArrowUpRight size={18}/></a></article>)}</div><div className="tool-footnote"><span>The useful part is understanding why it was built.</span><a href="/blog?topic=Automation">All automation entries <ArrowRight size={16}/></a></div></div></div></main>;}
+import { ArrowRight, Braces, CheckCircle2 } from 'lucide-react';
+import { articleUrl, posts, toolDetails } from '@/lib/content';
+export const metadata = { title: 'Tools' };
+export default function Tools() {
+  const builds = posts.filter((post) => post.type === 'Build');
+  return (
+    <main id="main">
+      <header className="page-heading shell">
+        <span className="micro-label">Tools library</span>
+        <h1>Built for the work<br />that should be repeatable.</h1>
+        <p>Scripts and practical solutions, documented with the problem, technology and decisions behind them.</p>
+      </header>
+      <section className="shell tool-list" aria-label="Practical tools">
+        {builds.map((post, index) => {
+          const detail = toolDetails[post.id];
+          return (
+            <article className="tool-card" key={post.id}>
+              <div className="tool-index">0{index + 1}</div>
+              <div className="tool-main">
+                <div className="tool-title-row"><span className="type-badge type-build">Build</span><span>{post.date}</span></div>
+                <h2><a href={articleUrl(post)}>{post.title}</a></h2>
+                <div className="tool-details">
+                  <div><span className="micro-label">Problem</span><p>{detail.problem}</p></div>
+                  <div><span className="micro-label">Outcome</span><p>{detail.outcome}</p></div>
+                </div>
+                <div className="tech-list">{detail.technology.map((technology) => <span key={technology}>{technology}</span>)}</div>
+              </div>
+              <div className="tool-action"><Braces size={25} /><a href={articleUrl(post)}>Open build notes <ArrowRight size={16} /></a></div>
+            </article>
+          );
+        })}
+      </section>
+      <section className="shell tool-principle">
+        <CheckCircle2 size={28} /><div><span className="micro-label">Built with context</span><h2>The code is only part of the solution.</h2><p>Each build explains why it exists, what it changes and how to approach it safely.</p></div>
+      </section>
+    </main>
+  );
+}

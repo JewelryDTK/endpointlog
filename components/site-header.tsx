@@ -1,2 +1,23 @@
-export function Wordmark(){return <span className="wordmark"><span className="brand-symbol" aria-hidden="true"><svg width="27" height="27" viewBox="0 0 32 32" fill="none"><path d="M8 9L23 16L8 23" stroke="currentColor" strokeWidth="1.6" opacity=".65"/><circle cx="8" cy="9" r="3.3" fill="currentColor"/><circle cx="23" cy="16" r="3.3" fill="currentColor"/><circle cx="8" cy="23" r="3.3" fill="currentColor"/></svg></span>endpoint<span>log</span><i aria-hidden="true">.</i></span>;}
-export function SiteHeader(){return <><a href="#main" className="skip-link">Skip to content</a><div className="preview-note">ENDPOINTLOG / DESIGN PREVIEW</div><header className="site-header"><div className="shell header-inner"><a href="/" className="logo" aria-label="EndpointLog home"><Wordmark/></a><nav className="desktop-nav" aria-label="Main navigation"><a href="/blog">The log</a><a href="/tools">Scripts & tools</a><a href="/about">About Jewelry</a><a href="/contact" className="header-cta">Let’s connect <span aria-hidden="true">↗</span></a></nav><details className="mobile-nav"><summary>Menu <span aria-hidden="true">☰</span></summary><nav aria-label="Mobile navigation"><a href="/">Home</a><a href="/blog">The log</a><a href="/tools">Scripts & tools</a><a href="/about">About Jewelry</a><a href="/contact">Let’s connect</a></nav></details></div></header></>;}
+import Link from 'next/link';
+import { Wordmark } from './brand';
+
+const links = [['Home', '/'], ['Knowledge', '/knowledge'], ['Tools', '/tools'], ['About', '/about'], ['Contact', '/contact']] as const;
+
+export function SiteHeader() {
+  return (
+    <header className="site-header">
+      <div className="shell header-inner">
+        <Link href="/" className="brand-link" aria-label="EndpointLog home"><Wordmark /></Link>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+        </nav>
+        <details className="mobile-menu">
+          <summary aria-label="Open navigation"><span /><span /><span /></summary>
+          <nav aria-label="Mobile navigation">
+            {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+          </nav>
+        </details>
+      </div>
+    </header>
+  );
+}

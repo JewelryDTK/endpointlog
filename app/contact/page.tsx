@@ -1,3 +1,21 @@
-import {ArrowUpRight,Mail} from 'lucide-react';
-export const metadata={title:'Let’s connect'};
-export default function Contact(){return <main id="main" className="shell contact-page"><span className="eyebrow">The conversation continues</span><h1>Something on<br/>your <span>mind?</span></h1><p>A question about an entry, an interesting problem or a different perspective. I’d like to hear it.</p><div className="contact-grid"><a href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer" className="focus-card"><span className="linkedin-mark" aria-hidden="true">in</span><h2>Let’s connect on LinkedIn</h2><p>Jewelry Kenepa</p><span className="text-link">Visit my profile <ArrowUpRight size={18}/></span></a><a href="mailto:info@workswithai.online" className="focus-card"><Mail size={27}/><h2>Send me a note</h2><p>info@workswithai.online</p><span className="text-link">Open your email app <ArrowUpRight size={18}/></span></a></div></main>;}
+import { ArrowUpRight, Mail } from 'lucide-react';
+export const metadata = { title: 'Contact' };
+export default function Contact() {
+  return (
+    <main id="main">
+      <header className="page-heading shell contact-heading">
+        <span className="micro-label">Contact</span>
+        <h1>Start with the<br />technical question.</h1>
+        <p>Want to compare notes on a contribution, share a workplace challenge or discuss an idea? Reach out.</p>
+      </header>
+      <section className="shell contact-options">
+        <a href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer">
+          <span className="contact-icon">in</span><div><span className="micro-label">LinkedIn</span><h2>Connect with Jewelry</h2><p>The best place for professional conversations and updates.</p></div><ArrowUpRight size={22} />
+        </a>
+        <a href="mailto:info@workswithai.online">
+          <span className="contact-icon"><Mail size={21} /></span><div><span className="micro-label">Email</span><h2>Send a direct note</h2><p>info@workswithai.online</p></div><ArrowUpRight size={22} />
+        </a>
+      </section>
+    </main>
+  );
+}

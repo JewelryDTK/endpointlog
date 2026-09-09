@@ -1,5 +1,34 @@
-import {ArrowUpRight} from 'lucide-react';
-import {posts} from '@/lib/content';
-import {MagazineRail,EntryRow} from '@/components/magazine';
-export const metadata={title:'About Jewelry'};
-export default function About(){return <main id="main" className="shell magazine"><div className="magazine-caption"><h1>The person behind the log.</h1><span>JEWELRY KENEPA</span></div><div className="magazine-layout"><MagazineRail/><div className="profile-notebook"><header className="profile-intro"><div><span className="section-label">ABOUT THE AUTHOR</span><h2>I learn by doing.<br/>And share as I go.</h2><p>Senior Technical Consultant at Rapid Circle.<br/>Based in the Netherlands.</p><a href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer" className="text-link">Find me on LinkedIn <ArrowUpRight size={16}/></a></div><img src="/assets/jewelry.jpg" alt="Jewelry Kenepa" width="230" height="250"/></header><section className="profile-story"><h2>Why I keep this log</h2><div><p>A deployment that finally works. A script that saves an afternoon. A security setting with an unexpected consequence. These are the things that make me open a notebook.</p><p>I work with Microsoft 365, Intune, Defender and AI in the modern workplace. EndpointLog is where I document that experience: practical insights from real scenarios, with enough detail to make them useful to someone else.</p><p>The topics follow the work. Endpoints, identity and security, automation, and the practical use of AI. The common thread is making the Microsoft workplace work better.</p></div></section><section className="profile-writing"><div className="journal-heading"><h2>Recent writing</h2><a href="/blog">Every entry <ArrowUpRight size={16}/></a></div>{posts.slice(0,3).map(p=><EntryRow post={p} key={p.id}/>)}</section></div></div></main>;}
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ContributionCard } from '@/components/site-parts';
+import { posts } from '@/lib/content';
+export const metadata = { title: 'About Jewelry Kenepa' };
+export default function About() {
+  return (
+    <main id="main">
+      <header className="about-hero shell">
+        <div>
+          <span className="micro-label">About the practitioner</span>
+          <h1>Learning in the field.<br />Documenting what lasts.</h1>
+          <p>I’m Jewelry Kenepa, a Senior Technical Consultant working across the Microsoft modern workplace.</p>
+          <a className="button" href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn <ArrowUpRight size={17} /></a>
+        </div>
+        <figure><img src="/assets/jewelry.jpg" alt="Jewelry Kenepa" width="480" height="540" /><figcaption>Senior Technical Consultant · Netherlands</figcaption></figure>
+      </header>
+      <section className="shell about-story">
+        <div><span className="micro-label">Why EndpointLog</span><h2>Practical work deserves practical documentation.</h2></div>
+        <div>
+          <p>A deployment that finally works. A script that saves an afternoon. A security setting with an unexpected consequence. Those are the moments worth documenting.</p>
+          <p>EndpointLog brings that work together across endpoints, security, automation and AI. Every contribution aims to give enough context for another practitioner to understand the decision and apply the lesson.</p>
+        </div>
+      </section>
+      <section className="shell expertise-section">
+        <div className="section-heading"><div><span className="micro-label">Working areas</span><h2>One workplace. Connected disciplines.</h2></div></div>
+        <div className="expertise-grid">{['Microsoft Intune', 'Identity & security', 'PowerShell & Graph', 'Microsoft 365 Copilot'].map((item, index) => <div key={item}><span>0{index + 1}</span><h3>{item}</h3></div>)}</div>
+      </section>
+      <section className="shell selected-section">
+        <div className="section-heading"><div><span className="micro-label">Recent work</span><h2>From the field manual.</h2></div><a href="/knowledge" className="plain-link">View all knowledge <ArrowRight size={16} /></a></div>
+        <div className="contribution-grid">{posts.slice(0, 3).map((post) => <ContributionCard key={post.id} post={post} compact />)}</div>
+      </section>
+    </main>
+  );
+}

@@ -1,4 +1,3 @@
-import {ArticleLibrary} from '@/components/article-library';
-import {FollowSection} from '@/components/site-parts';
-export const metadata={title:'The log'};
-export default async function Blog({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}){const params=await searchParams;const topic=typeof params.topic==='string'?params.topic:'';const query=typeof params.q==='string'?params.q:'';return <main id="main"><section className="page-intro shell"><span className="eyebrow">A notebook for the modern workplace</span><h1>The log<span>.</span></h1><p>Practical guides, honest experiments and things worth keeping.<br/>From endpoints and security to automation and AI.</p></section><div className="shell library-section"><ArticleLibrary topic={topic} query={query}/></div><FollowSection/></main>;}
+import Knowledge from '../knowledge/page';
+export const metadata = { title: 'Knowledge' };
+export default Knowledge;
