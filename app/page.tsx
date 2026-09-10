@@ -13,17 +13,6 @@ export default function Home() {
   const selected = [posts.find((p) => p.type === 'Guide'), posts.find((p) => p.type === 'Build'), posts.find((p) => p.type === 'Insight')].filter(Boolean) as typeof posts;
   return (
     <main id="main">
-      <section className="home-intro shell">
-        <div className="intro-copy">
-          <span className="micro-label">EndpointLog / Jewelry Kenepa</span>
-          <h1>Microsoft workplace, in practice.</h1>
-          <p>Notes from my work with endpoints, security, automation and AI.</p>
-        </div>
-        <div className="intro-actions">
-          <a className="button" href="/knowledge">Browse knowledge <ArrowRight size={17} /></a>
-          <a className="plain-link" href="/tools">View tools</a>
-        </div>
-      </section>
       <section className="domain-section shell" aria-labelledby="domains-heading">
         <div className="section-kicker"><span>01</span><h2 id="domains-heading">Browse by domain</h2></div>
         <div className="domain-grid">
