@@ -228,6 +228,7 @@ button,input{font:inherit}
 .tool-card:hover{background:#fff;box-shadow:inset 3px 0 0 var(--cyan),0 9px 26px rgba(11,31,51,.045)}
 .contact-options>a{border-radius:9px;box-shadow:0 8px 24px rgba(11,31,51,.025)}
 .site-footer{border-top:3px solid var(--cyan)}
+.site-footer .wordmark-type{color:#fff}
 
 @media(max-width:900px){
  .contribution-card,.contribution-compact,.contribution-card:last-child:nth-child(odd){grid-template-columns:38px minmax(0,1fr) 135px 34px}
