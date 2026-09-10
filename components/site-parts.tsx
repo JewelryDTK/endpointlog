@@ -5,19 +5,19 @@ import { Wordmark } from './brand';
 export function ContributionCard({ post, compact = false }: { post: Post; compact?: boolean }) {
   return (
     <article className={'contribution-card' + (compact ? ' contribution-compact' : '')}>
-      <a href={articleUrl(post)} className="card-image" aria-label={`Read ${post.title}`}>
-        <img src={post.image} alt="" width="720" height="405" />
-        <span className={`type-badge type-${post.type.toLowerCase()}`}>{post.type}</span>
-      </a>
-      <div className="card-body">
-        <div className="card-topics">{post.topics.map((topic) => <span key={topic}>{topic}</span>)}</div>
+      <div className="entry-main">
+        <div className="entry-labels">
+          <span className={`type-badge type-${post.type.toLowerCase()}`}>{post.type}</span>
+          <span>{post.topics.join(' / ')}</span>
+        </div>
         <h3><a href={articleUrl(post)}>{post.title}</a></h3>
         {!compact && <p>{post.summary}</p>}
-        <div className="card-footer">
-          <span>{post.date} · {post.minutes} min</span>
-          <a href={articleUrl(post)} aria-label={`Read ${post.title}`}>Read <ArrowRight size={16} /></a>
-        </div>
+        <div className="entry-meta"><span>{post.date}</span><span>{post.minutes} min read</span></div>
       </div>
+      <a href={articleUrl(post)} className="entry-image" aria-label={`Read ${post.title}`}>
+        <img src={post.image} alt="" width="180" height="110" />
+      </a>
+      <a className="entry-read" href={articleUrl(post)} aria-label={`Read ${post.title}`}><ArrowRight size={18} /></a>
     </article>
   );
 }

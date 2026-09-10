@@ -4,9 +4,8 @@ export default function Contact() {
   return (
     <main id="main">
       <header className="page-heading shell contact-heading">
-        <span className="micro-label">Contact</span>
-        <h1>Start with the<br />technical question.</h1>
-        <p>Want to compare notes on a contribution, share a workplace challenge or discuss an idea? Reach out.</p>
+        <div><span className="micro-label">Get in touch</span><h1>Contact</h1></div>
+        <p>Compare notes on a contribution, share a workplace challenge or discuss an idea.</p>
       </header>
       <section className="shell contact-options">
         <a href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer">

@@ -6,9 +6,8 @@ export default function Tools() {
   return (
     <main id="main">
       <header className="page-heading shell">
-        <span className="micro-label">Tools library</span>
-        <h1>Built for the work<br />that should be repeatable.</h1>
-        <p>Scripts and practical solutions, documented with the problem, technology and decisions behind them.</p>
+        <div><span className="micro-label">Library / 02 builds</span><h1>Tools</h1></div>
+        <p>Scripts and practical solutions, including the problem, technology and decisions behind them.</p>
       </header>
       <section className="shell tool-list" aria-label="Practical tools">
         {builds.map((post, index) => {
@@ -30,9 +29,7 @@ export default function Tools() {
           );
         })}
       </section>
-      <section className="shell tool-principle">
-        <CheckCircle2 size={28} /><div><span className="micro-label">Built with context</span><h2>The code is only part of the solution.</h2><p>Each build explains why it exists, what it changes and how to approach it safely.</p></div>
-      </section>
+      <section className="shell tool-principle"><CheckCircle2 size={24} /><p>Each build explains why it exists, what it changes and how to approach it safely.</p></section>
     </main>
   );
 }

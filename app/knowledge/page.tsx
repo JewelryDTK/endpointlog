@@ -5,9 +5,8 @@ export default async function Knowledge({ searchParams }: { searchParams: Promis
   return (
     <main id="main">
       <header className="page-heading shell">
-        <span className="micro-label">Knowledge base</span>
-        <h1>Find what you need.<br />Understand how it works.</h1>
-        <p>Guides, builds and insights from real Microsoft workplace scenarios.</p>
+        <div><span className="micro-label">Library / 08 contributions</span><h1>Knowledge</h1></div>
+        <p>Search practical guides, builds and insights from Microsoft workplace projects.</p>
       </header>
       <section className="shell knowledge-library" aria-label="Knowledge contributions">
         <ArticleLibrary
