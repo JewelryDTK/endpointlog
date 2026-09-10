@@ -240,3 +240,29 @@ button,input{font:inherit}
  .knowledge-controls{border-radius:8px}
  .section-heading{padding-bottom:15px}
 }
+
+/* Softer geometry */
+.button{border-radius:11px}
+.mobile-menu summary,.mobile-menu nav{border-radius:12px}
+.domain-card{border-radius:14px}
+.domain-icon{border-radius:11px}
+.knowledge-controls{border-radius:16px}
+.knowledge-search{border-radius:10px}
+.contribution-card,.contribution-card:last-child:nth-child(odd){border-radius:13px}
+.entry-image{border-radius:11px}
+.entry-read{border-radius:12px}
+.tool-card{border-radius:13px}
+.tool-principle{border-radius:14px}
+.tech-list span{border-radius:6px}
+.contact-options>a{border-radius:15px}
+.contact-icon{border-radius:12px}
+.empty-state{border-radius:14px}
+.article-cover{overflow:hidden;border-radius:16px}
+.article-summary{border-radius:0 12px 12px 0}
+.article-prose pre{border-radius:12px}
+.article-toc{border-radius:10px}
+
+@media(max-width:640px){
+ .knowledge-controls{border-radius:13px}
+ .article-cover{border-radius:0}
+}
