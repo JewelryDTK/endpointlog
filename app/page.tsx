@@ -15,9 +15,9 @@ export default function Home() {
     <main id="main">
       <section className="home-intro shell">
         <div className="intro-copy">
-          <span className="micro-label">EndpointLog / Field manual</span>
-          <h1>Guides, tools and notes for the Microsoft workplace.</h1>
-          <p>Tested and documented by Jewelry Kenepa across endpoints, security, automation and AI.</p>
+          <span className="micro-label">EndpointLog / Jewelry Kenepa</span>
+          <h1>Microsoft workplace, in practice.</h1>
+          <p>Notes from my work with endpoints, security, automation and AI.</p>
         </div>
         <div className="intro-actions">
           <a className="button" href="/knowledge">Browse knowledge <ArrowRight size={17} /></a>
