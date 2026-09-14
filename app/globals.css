@@ -43,7 +43,7 @@ button,input{font:inherit}
 .section-kicker:after{content:"";height:1px;background:var(--line);flex:1}
 .domain-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
 .domain-card{position:relative;min-height:260px;padding:28px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}
-.domain-card:hover{z-index:2;background:var(--interactive);color:#fff}
+.domain-card:hover{z-index:2;background:var(--interactive);color:#fff;transform:translateY(-4px);box-shadow:var(--shadow)}
 .domain-card>span{position:absolute;right:26px;top:27px;color:#737981;font-size:.72rem;font-weight:800}
 .domain-icon{width:43px;height:43px;display:grid;place-items:center;margin-bottom:30px;border-radius:7px;background:var(--surface);color:var(--interactive)}
 .domain-card h3{margin:0 0 10px;color:var(--graphite);font-size:1.25rem;letter-spacing:-.025em}
@@ -290,3 +290,4 @@ button,input{font:inherit}
 .contribution-card:focus-within .entry-read,
 .entry-read:focus-visible{background:var(--interactive);border-color:var(--interactive);color:var(--mint)}
 .button:hover svg,.button:focus-visible svg{color:var(--mint)}
+@media(prefers-reduced-motion:reduce){.domain-card:hover{transform:none}}

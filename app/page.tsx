@@ -26,7 +26,7 @@ export default function Home() {
       <section className="selected-section shell" aria-labelledby="selected-heading">
         <div className="section-heading">
           <div><span className="micro-label">Selected</span><h2 id="selected-heading">Recent contributions</h2></div>
-          <a className="plain-link" href="/knowledge">View all eight <ArrowRight size={16} /></a>
+          <a className="plain-link" href="/knowledge">View all articles <ArrowRight size={16} /></a>
         </div>
         <div className="contribution-grid">{selected.map((post) => <ContributionCard key={post.id} post={post} />)}</div>
       </section>
