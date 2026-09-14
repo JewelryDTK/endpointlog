@@ -1,4 +1,4 @@
-:root{--brand:#3b1eff;--brand-on-dark:#d7e8fa;--graphite:#282a39;--graphite-2:#36384b;--interactive:#3b1eff;--focus:#7864ff;--surface:#d7e8fa;--ink:#282a39;--muted:#626870;--line:#dce3ed;--paper:#fff;--canvas:#ffffff;--build:#393d43;--guide:#393d43;--insight:#393d43;--shadow:0 18px 50px rgba(37,40,45,.08)}
+:root{--mint:#5df9c0;--brand:#3b1eff;--brand-on-dark:#d7e8fa;--graphite:#282a39;--graphite-2:#36384b;--interactive:#3b1eff;--focus:#7864ff;--surface:#d7e8fa;--ink:#282a39;--muted:#626870;--line:#dce3ed;--paper:#fff;--canvas:#ffffff;--build:#393d43;--guide:#393d43;--insight:#393d43;--shadow:0 18px 50px rgba(37,40,45,.08)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--font-sans-main),Arial,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
@@ -285,3 +285,8 @@ button,input{font:inherit}
 .site-footer{background:var(--graphite);border-top-color:var(--graphite)}
 .footer-connect .micro-label{color:var(--surface)}
 ::selection{background:var(--surface);color:var(--graphite)}
+/* Mint is reserved for small accents on saturated blue. */
+.contribution-card:hover .entry-read,
+.contribution-card:focus-within .entry-read,
+.entry-read:focus-visible{background:var(--interactive);border-color:var(--interactive);color:var(--mint)}
+.button:hover svg,.button:focus-visible svg{color:var(--mint)}
