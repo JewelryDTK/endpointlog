@@ -370,10 +370,8 @@ button,input{font:inherit}
 .site-header{position:sticky;border-bottom-color:var(--line);background:rgba(251,252,255,.96)}
 .site-header:after{content:"";position:absolute;right:0;bottom:-1px;left:0;height:2px;background:var(--brand-gradient)}
 .brand-link{border-radius:0}
-.wordmark{gap:13px}
-.wordmark-mark{width:46px;height:46px}
-.wordmark-type{color:var(--graphite);font-size:1.5rem;font-weight:800;letter-spacing:-.06em}
-.wordmark-type span{background:var(--brand-gradient);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.wordmark{gap:0}
+.wordmark-mark{display:block;width:214px;height:auto}
 .mobile-menu summary{border-radius:3px;background:#fff}
 .desktop-nav a:hover,.desktop-nav a[aria-current=page]{color:var(--interactive);border-color:var(--interactive)}
 .micro-label{color:var(--interactive)}
@@ -404,11 +402,9 @@ button,input{font:inherit}
 .tool-principle{border-top:3px solid;border-image:var(--brand-gradient) 1}
 .site-footer{position:relative;border-top:0;background:var(--graphite)}
 .site-footer:before{content:"";position:absolute;top:0;right:0;left:0;height:3px;background:var(--brand-gradient)}
-.site-footer .wordmark-type span{background:linear-gradient(135deg,#66a9ff,#8b77ff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.site-footer .wordmark-mark{filter:drop-shadow(0 0 1px rgba(222,228,255,.95)) drop-shadow(0 4px 9px rgba(0,0,0,.24))}
+.site-footer .wordmark-mark{width:205px;filter:brightness(0) invert(1);opacity:.98}
 .footer-connect .micro-label{color:#aebaff}
 
 @media(max-width:640px){
- .wordmark-mark{width:42px;height:42px}
- .wordmark-type{font-size:1.3rem}
+ .wordmark-mark{width:180px}
 }

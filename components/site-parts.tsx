@@ -27,7 +27,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="shell footer-main">
         <div className="footer-brand">
-          <a href="/" aria-label="EndpointLog home"><Wordmark /></a>
+          <a href="/" aria-label="EndpointLog home"><Wordmark variant="footer" /></a>
           <p>Practical knowledge for the Microsoft workplace.</p>
           <small>Tested, built and documented by Jewelry Kenepa.</small>
         </div>
