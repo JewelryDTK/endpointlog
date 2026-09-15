@@ -1,7 +1,7 @@
 type BrandMarkProps = { className?: string; title?: string };
 
 export function BrandMark({ className = '', title = 'EndpointLog EL' }: BrandMarkProps) {
-  return <img className={className} src="/brand-mark.svg" alt={title} />;
+  return <img className={className} src="/brand-mark-original.png" alt={title} />;
 }
 
 export function Wordmark({ compact = false }: { compact?: boolean }) {

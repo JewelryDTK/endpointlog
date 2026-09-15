@@ -405,6 +405,7 @@ button,input{font:inherit}
 .site-footer{position:relative;border-top:0;background:var(--graphite)}
 .site-footer:before{content:"";position:absolute;top:0;right:0;left:0;height:3px;background:var(--brand-gradient)}
 .site-footer .wordmark-type span{background:linear-gradient(135deg,#66a9ff,#8b77ff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.site-footer .wordmark-mark{filter:drop-shadow(0 0 1px rgba(222,228,255,.95)) drop-shadow(0 4px 9px rgba(0,0,0,.24))}
 .footer-connect .micro-label{color:#aebaff}
 
 @media(max-width:640px){
