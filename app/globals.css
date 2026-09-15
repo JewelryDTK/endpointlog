@@ -391,9 +391,9 @@ button,input{font:inherit}
 .selected-section .contribution-stack{border-top-color:var(--graphite)}
 .selected-section .contribution-stack .contribution-card{border-bottom-color:#c8d2ea}
 .selected-section .contribution-stack .contribution-card:hover{background:rgba(255,255,255,.58)}
-.contribution-card:hover .entry-read,.contribution-card:focus-within .entry-read,.entry-read:focus-visible{border-color:transparent;background:var(--brand-gradient);color:#fff}
+.contribution-card:hover .entry-read,.contribution-card:focus-within .entry-read,.entry-read:focus-visible{border-color:var(--interactive);background:var(--interactive);color:#fff;box-shadow:none}
 .type-guide,.type-build,.type-insight,.tech-list span{border-color:#cad4f4;background:#eef1ff;color:#303a8d}
-.filter-row a:hover,.filter-row a[aria-current=page]{border-color:transparent;background:var(--brand-gradient)}
+.filter-row a:hover,.filter-row a[aria-current=page]{border-color:var(--interactive);background:var(--interactive);color:#fff;box-shadow:none}
 .knowledge-search{background:#fff}
 .contact-icon{border-radius:3px;background:var(--brand-gradient)}
 .contact-options>a:hover{border-color:#aebdf1;background:#f4f6ff}
