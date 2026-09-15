@@ -428,12 +428,11 @@ body{
 .domain-card:hover{transform:translateY(-6px);box-shadow:0 24px 52px rgba(23,27,41,.2)}
 .domain-card:hover:after{border-color:rgba(126,139,255,.38);transform:rotate(38deg) scale(1.08)}
 .selected-section{
- background:
-  linear-gradient(rgba(36,71,244,.035) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(36,71,244,.035) 1px,transparent 1px),
-  linear-gradient(145deg,#f4f6ff 0%,#e7ecff 100%);
- background-size:34px 34px,34px 34px,auto
+ isolation:isolate;
+ background:linear-gradient(145deg,#f4f6ff 0%,#e7ecff 100%)
 }
+.selected-section:after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(rgba(36,71,244,.026) 1px,transparent 1px),linear-gradient(90deg,rgba(36,71,244,.026) 1px,transparent 1px);background-size:38px 38px;mask-image:radial-gradient(ellipse at center,transparent 20%,rgba(0,0,0,.18) 58%,#000 100%);-webkit-mask-image:radial-gradient(ellipse at center,transparent 20%,rgba(0,0,0,.18) 58%,#000 100%)}
+.selected-section>*{position:relative;z-index:1}
 .selected-section .section-heading{padding-bottom:21px}
 .selected-section .contribution-stack .contribution-card{transition:background-color .2s ease,transform .2s ease}
 .selected-section .contribution-stack .contribution-card:hover{transform:translateX(8px);background:rgba(255,255,255,.7)}
