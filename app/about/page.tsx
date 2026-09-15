@@ -23,7 +23,7 @@ export default function About() {
       </section>
       <section className="shell expertise-section">
         <div className="section-heading"><div><span className="micro-label">Working areas</span><h2>Areas of focus</h2></div></div>
-        <div className="expertise-grid">{['Microsoft Intune', 'Identity & security', 'PowerShell & Graph', 'Microsoft 365 Copilot'].map((item, index) => <div key={item}><span>0{index + 1}</span><h3>{item}</h3></div>)}</div>
+        <div className="expertise-grid">{['Microsoft Intune', 'Identity & security', 'PowerShell & Graph', 'Microsoft 365 Copilot'].map((item) => <div key={item}><h3>{item}</h3></div>)}</div>
       </section>
       <section className="shell selected-section">
         <div className="section-heading"><div><span className="micro-label">Recent work</span><h2>Latest contributions</h2></div><a href="/knowledge" className="plain-link">View all knowledge <ArrowRight size={16} /></a></div>

@@ -6,15 +6,14 @@ export default function Tools() {
   return (
     <main id="main">
       <header className="page-heading shell">
-        <div><span className="micro-label">Library / 02 builds</span><h1>Tools</h1></div>
+        <div><span className="micro-label">Build library</span><h1>Tools</h1></div>
         <p>Scripts and practical solutions, including the problem, technology and decisions behind them.</p>
       </header>
       <section className="shell tool-list" aria-label="Practical tools">
-        {builds.map((post, index) => {
+        {builds.map((post) => {
           const detail = toolDetails[post.id];
           return (
             <article className="tool-card" key={post.id}>
-              <div className="tool-index">0{index + 1}</div>
               <div className="tool-main">
                 <div className="tool-title-row"><span className="type-badge type-build">Build</span><span>{post.date}</span></div>
                 <h2><a href={articleUrl(post)}>{post.title}</a></h2>

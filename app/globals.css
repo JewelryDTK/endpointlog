@@ -343,3 +343,25 @@ button,input{font:inherit}
  .selected-section .contribution-stack .contribution-card:before{display:none}
  .selected-section .contribution-stack .entry-main h3{font-size:1.12rem}
 }
+
+/* Remove decorative indexing that does not communicate state or sequence. */
+.contribution-card:before{display:none}
+.contribution-card,.contribution-card:last-child:nth-child(odd){grid-template-columns:minmax(0,1fr) 190px 36px}
+.contribution-compact{grid-template-columns:minmax(0,1fr) 155px 36px}
+.selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 280px 38px}
+.tool-card{grid-template-columns:minmax(0,1fr) 200px}
+.expertise-grid div{display:flex;align-items:flex-end}
+.expertise-grid h3{margin:0}
+
+@media(max-width:900px){
+ .contribution-card,.contribution-card:last-child:nth-child(odd){grid-template-columns:minmax(0,1fr) 160px 34px}
+ .contribution-compact{grid-template-columns:minmax(0,1fr) 140px 34px}
+ .selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 190px 34px}
+ .tool-card{grid-template-columns:1fr}
+ .tool-action{grid-column:1}
+}
+
+@media(max-width:640px){
+ .contribution-card,.contribution-card:last-child:nth-child(odd),.contribution-compact{grid-template-columns:minmax(0,1fr) 108px}
+ .selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 112px}
+}

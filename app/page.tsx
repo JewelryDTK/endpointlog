@@ -14,11 +14,11 @@ export default function Home() {
   return (
     <main id="main">
       <section className="domain-section shell" aria-labelledby="domains-heading">
-        <div className="section-kicker"><span>01</span><h2 id="domains-heading">Browse by domain</h2></div>
+        <div className="section-kicker"><h2 id="domains-heading">Browse by domain</h2></div>
         <div className="domain-grid">
-          {domains.map(({ name, copy }, index) => (
+          {domains.map(({ name, copy }) => (
             <a className="domain-card" key={name} href={`/knowledge?topic=${encodeURIComponent(name)}`}>
-              <span>0{index + 1}</span><h3>{name}</h3><p>{copy}</p>
+              <h3>{name}</h3><p>{copy}</p>
             </a>
           ))}
         </div>
@@ -26,7 +26,7 @@ export default function Home() {
       <section className="selected-section" aria-labelledby="selected-heading">
         <div className="shell">
           <div className="section-heading">
-            <div><span className="micro-label">Selected</span><h2 id="selected-heading">Recent contributions</h2></div>
+            <div><h2 id="selected-heading">Recent contributions</h2></div>
             <a className="plain-link" href="/knowledge">View all articles <ArrowRight size={16} /></a>
           </div>
           <div className="contribution-grid contribution-stack">
