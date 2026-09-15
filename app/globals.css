@@ -480,3 +480,20 @@ body{
  .page-heading:before{width:46%}
  .tool-card{padding:23px}
 }
+
+/* Wider long-form reading layout. */
+.article-layout{grid-template-columns:268px minmax(0,860px);justify-content:space-between;gap:52px}
+.article-toc{padding-top:9px;border-top-width:3px}
+.article-toc .micro-label{font-size:.76rem}
+.article-toc nav{margin-top:16px}
+.article-toc nav a{padding:10px 0;font-size:.84rem;line-height:1.45}
+.article-toc .source-link{margin-top:21px;font-size:.78rem}
+
+@media(max-width:900px){
+ .article-layout{grid-template-columns:210px minmax(0,1fr);gap:38px}
+}
+
+@media(max-width:640px){
+ .article-layout{grid-template-columns:1fr;gap:34px}
+ .article-toc{padding:20px}
+}
