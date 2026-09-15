@@ -29,8 +29,8 @@ export default function Home() {
             <div><span className="micro-label">Selected</span><h2 id="selected-heading">Recent contributions</h2></div>
             <a className="plain-link" href="/knowledge">View all articles <ArrowRight size={16} /></a>
           </div>
-          <div className="contribution-grid contribution-featured-layout">
-            {selected.map((post, index) => <ContributionCard key={post.id} post={post} featured={index === 0} />)}
+          <div className="contribution-grid contribution-stack">
+            {selected.map((post) => <ContributionCard key={post.id} post={post} />)}
           </div>
         </div>
       </section>
