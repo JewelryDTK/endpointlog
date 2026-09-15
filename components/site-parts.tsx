@@ -2,9 +2,9 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { articleUrl, type Post } from '@/lib/content';
 import { Wordmark } from './brand';
 
-export function ContributionCard({ post, compact = false }: { post: Post; compact?: boolean }) {
+export function ContributionCard({ post, compact = false, featured = false }: { post: Post; compact?: boolean; featured?: boolean }) {
   return (
-    <article className={'contribution-card' + (compact ? ' contribution-compact' : '')}>
+    <article className={'contribution-card' + (compact ? ' contribution-compact' : '') + (featured ? ' contribution-featured' : '')}>
       <div className="entry-main">
         <div className="entry-labels">
           <span className={`type-badge type-${post.type.toLowerCase()}`}>{post.type}</span>
