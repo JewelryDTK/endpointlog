@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Wordmark } from './brand';
 
@@ -17,14 +16,14 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="shell header-inner">
-        <Link href="/" className="brand-link" aria-label="EndpointLog home"><Wordmark /></Link>
+        <a href="/" className="brand-link" aria-label="EndpointLog home"><Wordmark /></a>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {links.map(([label, href]) => <Link key={href} href={href} aria-current={isActive(href) ? 'page' : undefined}>{label}</Link>)}
+          {links.map(([label, href]) => <a key={href} href={href} aria-current={isActive(href) ? 'page' : undefined}>{label}</a>)}
         </nav>
         <details className="mobile-menu">
           <summary aria-label="Open navigation"><span /><span /><span /></summary>
           <nav aria-label="Mobile navigation">
-            {links.map(([label, href]) => <Link key={href} href={href} aria-current={isActive(href) ? 'page' : undefined}>{label}</Link>)}
+            {links.map(([label, href]) => <a key={href} href={href} aria-current={isActive(href) ? 'page' : undefined}>{label}</a>)}
           </nav>
         </details>
       </div>
