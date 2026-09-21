@@ -1,7 +1,7 @@
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { ContributionCard } from '@/components/site-parts';
 import { posts } from '@/lib/content';
-export const metadata = { title: 'About Jewelry Kenepa' };
+export const metadata = { title: 'About Jewelry Kenepa', description: 'About Jewelry Kenepa and the practical Microsoft workplace knowledge documented on EndpointLog.', alternates: { canonical: '/about/' } };
 export default function About() {
   return (
     <main id="main">

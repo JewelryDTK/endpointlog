@@ -13,6 +13,7 @@ export default function Home() {
   const selected = [posts.find((p) => p.type === 'Guide'), posts.find((p) => p.type === 'Build'), posts.find((p) => p.type === 'Insight')].filter(Boolean) as typeof posts;
   return (
     <main id="main">
+      <h1 className="sr-only">EndpointLog — practical Microsoft workplace knowledge</h1>
       <section className="domain-section shell" aria-labelledby="domains-heading">
         <div className="section-kicker"><h2 id="domains-heading">Browse by domain</h2></div>
         <div className="domain-grid">

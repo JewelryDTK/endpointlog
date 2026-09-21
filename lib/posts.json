@@ -155,8 +155,7 @@
     "id": 674,
     "title": "Conditional Access Now Runs During Windows Hello Setup",
     "date": "23 Jul 2026",
-    "slug": "conditional-access-now-runs-during-windows-hello-setup",
-    "url": "https://workswithai.online/2026/07/23/conditional-access-now-runs-during-windows-hello-setup/"
+    "slug": "conditional-access-now-runs-during-windows-hello-setup"
   },
   {
     "categories": [
@@ -310,8 +309,7 @@
     "id": 647,
     "title": "A Look at Copilot Vision",
     "date": "14 Jul 2026",
-    "slug": "a-look-at-copilot-vision",
-    "url": "https://workswithai.online/2026/07/14/a-look-at-copilot-vision/"
+    "slug": "a-look-at-copilot-vision"
   },
   {
     "categories": [
@@ -480,8 +478,7 @@
     "id": 572,
     "title": "I Built a Nuke Button for Intune",
     "date": "13 Jul 2026",
-    "slug": "i-built-a-nuke-button-for-intune",
-    "url": "https://workswithai.online/2026/07/13/i-built-a-nuke-button-for-intune/"
+    "slug": "i-built-a-nuke-button-for-intune"
   },
   {
     "categories": [
@@ -650,8 +647,7 @@
     "id": 583,
     "title": "Remote Help Is Now In E3",
     "date": "01 Jul 2026",
-    "slug": "remote-help-is-in-e3",
-    "url": "https://workswithai.online/2026/07/01/remote-help-is-in-e3/"
+    "slug": "remote-help-is-in-e3"
   },
   {
     "categories": [
@@ -761,8 +757,7 @@
     "id": 520,
     "title": "I Got Addicted to Copilot Cowork.",
     "date": "25 Jun 2026",
-    "slug": "i-got-addicted-to-copilot-cowork",
-    "url": "https://workswithai.online/2026/06/25/i-got-addicted-to-copilot-cowork/"
+    "slug": "i-got-addicted-to-copilot-cowork"
   },
   {
     "categories": [
@@ -897,8 +892,7 @@
     "id": 438,
     "title": "The Hour-Long Intune Task I Replaced in 30 Seconds",
     "date": "18 Jun 2026",
-    "slug": "how-i-built-a-bulk-autopilot-group-tag-tool-with-powershell-and-the-graph-api",
-    "url": "https://workswithai.online/2026/06/18/how-i-built-a-bulk-autopilot-group-tag-tool-with-powershell-and-the-graph-api/"
+    "slug": "how-i-built-a-bulk-autopilot-group-tag-tool-with-powershell-and-the-graph-api"
   },
   {
     "categories": [
@@ -991,8 +985,7 @@
     "id": 402,
     "title": "Microsoft Updates Worth Knowing: May 2026",
     "date": "16 May 2026",
-    "slug": "microsoft-updates-worth-knowing-platform-sso-for-macos-app-inventory-and-gpt-5-5-instant",
-    "url": "https://workswithai.online/2026/05/16/microsoft-updates-worth-knowing-platform-sso-for-macos-app-inventory-and-gpt-5-5-instant/"
+    "slug": "microsoft-updates-worth-knowing-platform-sso-for-macos-app-inventory-and-gpt-5-5-instant"
   },
   {
     "categories": [
@@ -1161,7 +1154,6 @@
     "id": 357,
     "title": "Copilot Cowork: When AI Stops Chatting and Starts Doing",
     "date": "13 May 2026",
-    "slug": "copilot-cowork-when-ai-stops-chatting-and-starts-doing",
-    "url": "https://workswithai.online/2026/05/13/copilot-cowork-when-ai-stops-chatting-and-starts-doing/"
+    "slug": "copilot-cowork-when-ai-stops-chatting-and-starts-doing"
   }
 ]

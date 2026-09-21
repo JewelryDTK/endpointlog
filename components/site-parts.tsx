@@ -37,10 +37,10 @@ export function SiteFooter() {
         <div className="footer-connect">
           <span className="micro-label">Connect</span>
           <a href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer">LinkedIn <ArrowUpRight size={14} /></a>
-          <a href="https://workswithai.online/feed/" target="_blank" rel="noopener noreferrer">RSS <ArrowUpRight size={14} /></a>
+          <a href="/feed.xml">RSS <ArrowUpRight size={14} /></a>
         </div>
       </div>
-      <div className="shell footer-base"><span>© 2026 EndpointLog</span><span>Independent perspectives on Microsoft technology.</span></div>
+      <div className="shell footer-base"><span>© 2026 EndpointLog</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/disclaimer">Disclaimer</a></nav><span>Independent perspectives on Microsoft technology.</span></div>
     </footer>
   );
 }

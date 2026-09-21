@@ -1,7 +1,6 @@
 import { ArticleLibrary } from '@/components/article-library';
-export const metadata = { title: 'Knowledge' };
-export default async function Knowledge({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const params = await searchParams;
+export const metadata = { title: 'Knowledge', description: 'Browse practical Microsoft workplace guides, builds and insights.', alternates: { canonical: '/knowledge/' } };
+export default function Knowledge() {
   return (
     <main id="main">
       <header className="page-heading shell">
@@ -9,11 +8,7 @@ export default async function Knowledge({ searchParams }: { searchParams: Promis
         <p>Search practical guides, builds and insights from Microsoft workplace projects.</p>
       </header>
       <section className="shell knowledge-library" aria-label="Knowledge contributions">
-        <ArticleLibrary
-          topic={typeof params.topic === 'string' ? params.topic : ''}
-          type={typeof params.type === 'string' ? params.type : ''}
-          query={typeof params.q === 'string' ? params.q : ''}
-        />
+        <ArticleLibrary />
       </section>
     </main>
   );

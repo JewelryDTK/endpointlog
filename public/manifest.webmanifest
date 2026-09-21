@@ -1,0 +1,10 @@
+{
+  "name": "EndpointLog",
+  "short_name": "EndpointLog",
+  "description": "Practical Microsoft workplace knowledge.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfcff",
+  "theme_color": "#171b29",
+  "icons": [{ "src": "/endpointlog-mark-color.png", "sizes": "any", "type": "image/png" }]
+}
