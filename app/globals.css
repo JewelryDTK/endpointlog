@@ -503,6 +503,8 @@ body{
 .contact-options{grid-template-columns:minmax(0,680px)}
 .footer-base nav{display:flex;flex-wrap:wrap;gap:16px}
 .footer-base nav a:hover{color:#fff}
+.footer-base nav button{padding:0;border:0;background:none;color:inherit;font:inherit;font-size:inherit;cursor:pointer}
+.footer-base nav button:hover{color:#fff}
 .legal-content{max-width:840px;padding-top:52px;padding-bottom:96px}
 .legal-content>p:first-child{margin-top:0;color:var(--muted);font-size:.84rem}
 .legal-content h2{margin:42px 0 12px;color:var(--graphite);font-size:1.45rem;letter-spacing:-.025em}
@@ -512,4 +514,23 @@ body{
 @media(max-width:640px){
  .footer-base{align-items:flex-start}
  .legal-content{padding-top:38px;padding-bottom:70px}
+}
+
+.consent-overlay{position:fixed;inset:0;z-index:90;background:rgba(23,27,41,.5);backdrop-filter:blur(2px)}
+.consent-dialog{position:fixed;right:24px;bottom:24px;left:24px;z-index:91;width:min(920px,calc(100% - 48px));margin-inline:auto;padding:26px 28px;border:1px solid #cfd7e8;border-top:3px solid;border-image:var(--brand-gradient) 1;background:#fff;box-shadow:0 24px 70px rgba(23,27,41,.24)}
+.consent-dialog h2{margin:7px 0 6px;color:var(--graphite);font-size:1.45rem;letter-spacing:-.025em}
+.consent-copy p{max-width:650px;margin:0;color:var(--muted);font-size:.9rem}
+.consent-copy a{color:var(--interactive);font-weight:750;border-bottom:1px solid currentColor}
+.consent-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px}
+.consent-actions button{cursor:pointer}
+.consent-secondary{padding:12px 17px;border:1px solid var(--line);border-radius:3px;background:#f4f6ff;color:var(--graphite);font-size:.84rem;font-weight:800}
+.consent-secondary:hover{border-color:var(--interactive)}
+.consent-choice{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:20px;padding:17px;border:1px solid var(--line);background:#f8f9ff}
+.consent-choice span{display:grid;gap:3px}.consent-choice small{color:var(--muted)}
+.consent-choice input{width:22px;height:22px;accent-color:var(--interactive)}
+
+@media(max-width:640px){
+ .consent-dialog{right:0;bottom:0;left:0;width:100%;padding:22px 18px}
+ .consent-actions{display:grid;grid-template-columns:1fr}
+ .consent-actions button{width:100%}
 }

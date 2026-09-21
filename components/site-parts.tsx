@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { articleUrl, type Post } from '@/lib/content';
 import { Wordmark } from './brand';
+import { CookieSettingsButton } from './cookie-consent';
 
 export function ContributionCard({ post, compact = false }: { post: Post; compact?: boolean }) {
   return (
@@ -40,7 +41,7 @@ export function SiteFooter() {
           <a href="/feed.xml">RSS <ArrowUpRight size={14} /></a>
         </div>
       </div>
-      <div className="shell footer-base"><span>© 2026 EndpointLog</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/disclaimer">Disclaimer</a></nav><span>Independent perspectives on Microsoft technology.</span></div>
+      <div className="shell footer-base"><span>© 2026 EndpointLog</span><nav aria-label="Legal"><a href="/privacy">Privacy</a><a href="/cookies">Cookies</a><a href="/disclaimer">Disclaimer</a><CookieSettingsButton /></nav><span>Independent perspectives on Microsoft technology.</span></div>
     </footer>
   );
 }
