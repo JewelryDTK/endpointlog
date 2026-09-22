@@ -83,7 +83,7 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
       </div>
       <section className="shell related-section">
         <div className="section-heading"><div><span className="micro-label">Continue exploring</span><h2>Related knowledge</h2></div><a className="plain-link" href="/knowledge">All contributions <ArrowRight size={16} /></a></div>
-        <div className="contribution-grid">{related.map((item) => <ContributionCard key={item.id} post={item} compact />)}</div>
+        <div className="contribution-grid contribution-stack">{related.map((item) => <ContributionCard key={item.id} post={item} showAuthor />)}</div>
       </section>
     </main>
   );

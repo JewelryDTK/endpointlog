@@ -3,6 +3,12 @@ import { ContributionCard } from '@/components/site-parts';
 import { posts } from '@/lib/content';
 import { authorSchema, pageMetadata } from '@/lib/seo';
 export const metadata = pageMetadata('About Jewelry Kenepa', 'About Jewelry Kenepa and the practical Microsoft workplace knowledge documented on EndpointLog.', '/about/');
+const focusAreas = [
+  { name: 'Microsoft Intune', topic: 'Endpoints' },
+  { name: 'Identity & security', topic: 'Security' },
+  { name: 'PowerShell & Graph', topic: 'Automation' },
+  { name: 'Microsoft 365 Copilot', topic: 'AI & Copilot' },
+] as const;
 export default function About() {
   return (
     <main id="main">
@@ -25,11 +31,11 @@ export default function About() {
       </section>
       <section className="shell expertise-section">
         <div className="section-heading"><div><span className="micro-label">Working areas</span><h2>Areas of focus</h2></div></div>
-        <div className="expertise-grid">{['Microsoft Intune', 'Identity & security', 'PowerShell & Graph', 'Microsoft 365 Copilot'].map((item) => <div key={item}><h3>{item}</h3></div>)}</div>
+        <div className="expertise-grid">{focusAreas.map(({ name, topic }) => <a className="domain-card" key={name} href={`/knowledge?topic=${encodeURIComponent(topic)}`}><h3>{name}</h3></a>)}</div>
       </section>
       <section className="shell selected-section">
         <div className="section-heading"><div><span className="micro-label">Recent work</span><h2>Latest contributions</h2></div><a href="/knowledge" className="plain-link">View all knowledge <ArrowRight size={16} /></a></div>
-        <div className="contribution-grid">{posts.slice(0, 3).map((post) => <ContributionCard key={post.id} post={post} compact />)}</div>
+        <div className="contribution-grid contribution-stack">{posts.slice(0, 3).map((post) => <ContributionCard key={post.id} post={post} showAuthor />)}</div>
       </section>
     </main>
   );
