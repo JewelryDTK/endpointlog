@@ -12,14 +12,14 @@ body{background:#fff}
 .domain-card{min-height:164px;padding:24px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .domain-card h3{margin:12px 0 9px}
 .domain-card p{font-size:.9rem}
-.domain-card:hover{background:#fff;transform:translateY(-3px);border-color:var(--interactive);box-shadow:0 10px 24px rgba(20,25,35,.06);color:var(--ink)}
-.domain-card:hover h3{color:var(--interactive)}
-.domain-card:hover p{color:var(--muted)}
-.selected-section{background:#f7f8fa;border-color:var(--line)}
+.domain-card:hover,.domain-card:focus-visible{background:var(--interactive);transform:translateY(-6px);border-color:var(--interactive);box-shadow:0 16px 28px rgba(36,87,230,.2);color:#fff}
+.domain-card:hover h3,.domain-card:focus-visible h3{color:#fff}
+.domain-card:hover p,.domain-card:focus-visible p{color:#fff}
+.selected-section{background-color:#f7f8fa;background-image:linear-gradient(rgba(36,87,230,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(36,87,230,.055) 1px,transparent 1px);background-size:32px 32px;border-color:var(--line)}
 .selected-section .section-heading{border-color:var(--line)}
 .selected-section .contribution-stack{border:0;display:grid;grid-template-columns:1fr;gap:16px}
 .selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 240px 38px;gap:28px;padding:26px;border:1px solid var(--line);border-radius:12px;background:#fff}
-.selected-section .contribution-stack .contribution-card:hover{transform:none;background:#fff;border-color:#b7becb;box-shadow:0 6px 22px rgba(20,25,35,.045)}
+.selected-section .contribution-stack .contribution-card:hover{transform:translateY(-5px);background:#fff;border-color:#b7becb;box-shadow:0 14px 28px rgba(20,25,35,.1)}
 .selected-section .contribution-stack .entry-main h3{font-size:clamp(1.15rem,1.8vw,1.5rem)}
 .selected-section .contribution-stack .entry-main>p{font-size:1rem}
 .entry-image{border:0;border-radius:8px;box-shadow:none}
@@ -52,5 +52,10 @@ body{background:#fff}
 .skip-link{position:fixed;top:8px;left:8px;z-index:1000;padding:12px 18px;background:var(--interactive);color:#fff;transform:translateY(-160%);border-radius:8px}
 .skip-link:focus{transform:translateY(0)}
 ::selection{background:#dce6ff;color:var(--ink)}
+.contribution-card,.contribution-card:last-child:nth-child(odd){border-radius:12px}
+.contribution-card,.tool-card,.contact-options>a{transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.contribution-card:hover,.contribution-card:focus-within,.tool-card:hover,.tool-card:focus-within,.contact-options>a:hover,.contact-options>a:focus-visible{transform:translateY(-5px);box-shadow:0 14px 28px rgba(20,25,35,.1)}
+.selected-section .contribution-stack .contribution-card:focus-within{transform:translateY(-5px);box-shadow:0 14px 28px rgba(20,25,35,.1)}
+@media(prefers-reduced-motion:reduce){.domain-card,.contribution-card,.tool-card,.contact-options>a{transition:none}.domain-card:hover,.domain-card:focus-visible,.contribution-card:hover,.contribution-card:focus-within,.selected-section .contribution-stack .contribution-card:hover,.selected-section .contribution-stack .contribution-card:focus-within,.tool-card:hover,.tool-card:focus-within,.contact-options>a:hover,.contact-options>a:focus-visible{transform:none}}
 @media(max-width:900px){.about-hero{grid-template-columns:minmax(0,1fr) 300px;gap:36px}.selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 180px 38px;gap:20px}}
 @media(max-width:640px){body{background:#fff}.domain-grid{gap:12px}.domain-card{padding:20px;min-height:125px}.domain-card p{font-size:.875rem}.about-hero{grid-template-columns:1fr;gap:32px;padding-block:36px 48px}.about-hero figure{width:100%;max-width:360px;justify-self:center}.selected-section .contribution-stack .contribution-card{grid-template-columns:minmax(0,1fr) 92px;gap:16px;padding:20px}.selected-section .entry-main{grid-column:1/-1}.selected-section .entry-image{grid-column:1;width:132px}.selected-section .entry-read{display:flex;grid-column:2;justify-self:end}.entry-meta{gap:12px;font-size:.75rem}.page-heading{padding-inline:0}.consent-dialog{border-radius:12px 12px 0 0}}

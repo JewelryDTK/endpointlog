@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const storageKey = 'endpointlog-consent-v1';
-const measurementId = 'G-SEM5NEP9HX';
+const measurementId = 'G-CT0LQZ5VR4';
 
 declare global {
   interface Window {
