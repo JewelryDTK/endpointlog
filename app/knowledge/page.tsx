@@ -1,5 +1,6 @@
 import { ArticleLibrary } from '@/components/article-library';
-export const metadata = { title: 'Knowledge', description: 'Browse practical Microsoft workplace guides, builds and insights.', alternates: { canonical: '/knowledge/' } };
+import { pageMetadata } from '@/lib/seo';
+export const metadata = pageMetadata('Knowledge', 'Browse practical Microsoft workplace guides, builds and insights.', '/knowledge/');
 export default function Knowledge() {
   return (
     <main id="main">

@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { ContributionCard } from '@/components/site-parts';
 import { posts } from '@/lib/content';
+import { websiteSchema } from '@/lib/seo';
 
 const domains = [
   { name: 'Endpoints', copy: 'Deployment and management across Windows, macOS and mobile.' },
@@ -10,9 +11,10 @@ const domains = [
 ] as const;
 
 export default function Home() {
-  const selected = [posts.find((p) => p.type === 'Guide'), posts.find((p) => p.type === 'Build'), posts.find((p) => p.type === 'Insight')].filter(Boolean) as typeof posts;
+  const selected = [...posts].sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, 8);
   return (
     <main id="main">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <h1 className="sr-only">EndpointLog — practical Microsoft workplace knowledge</h1>
       <section className="domain-section shell" aria-labelledby="domains-heading">
         <div className="section-kicker"><h2 id="domains-heading">Browse by domain</h2></div>
@@ -31,8 +33,9 @@ export default function Home() {
             <a className="plain-link" href="/knowledge">View all articles <ArrowRight size={16} /></a>
           </div>
           <div className="contribution-grid contribution-stack">
-            {selected.map((post) => <ContributionCard key={post.id} post={post} />)}
+            {selected.map((post) => <ContributionCard key={post.id} post={post} showAuthor />)}
           </div>
+          <div className="home-more"><a className="button" href="/knowledge/">Explore all knowledge <ArrowRight size={17} /></a></div>
         </div>
       </section>
     </main>

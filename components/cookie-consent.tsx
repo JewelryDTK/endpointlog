@@ -14,7 +14,7 @@ declare global {
 
 function configureConsent(analytics: boolean) {
   window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function gtag(...args: unknown[]) { window.dataLayer.push(args); };
+  window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
   window.gtag('consent', 'update', {
     analytics_storage: analytics ? 'granted' : 'denied',
     ad_storage: 'denied',
@@ -51,7 +51,7 @@ export function CookieConsent() {
 
   useEffect(() => {
     window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag(...args: unknown[]) { window.dataLayer.push(args); };
+    window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
     window.gtag('consent', 'default', {
       analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
     });

@@ -3,7 +3,7 @@ import { articleUrl, type Post } from '@/lib/content';
 import { Wordmark } from './brand';
 import { CookieSettingsButton } from './cookie-consent';
 
-export function ContributionCard({ post, compact = false }: { post: Post; compact?: boolean }) {
+export function ContributionCard({ post, compact = false, showAuthor = false }: { post: Post; compact?: boolean; showAuthor?: boolean }) {
   return (
     <article className={'contribution-card' + (compact ? ' contribution-compact' : '')}>
       <div className="entry-main">
@@ -13,10 +13,10 @@ export function ContributionCard({ post, compact = false }: { post: Post; compac
         </div>
         <h3><a href={articleUrl(post)}>{post.title}</a></h3>
         {!compact && <p>{post.summary}</p>}
-        <div className="entry-meta"><span>{post.date}</span><span>{post.minutes} min read</span></div>
+        <div className="entry-meta">{showAuthor && <a className="entry-author" href="/about/"><img src="/assets/jewelry.jpg" alt="" width="30" height="30" loading="lazy" /><span>Jewelry Kenepa</span></a>}<time dateTime={new Date(`${post.date} 00:00:00 GMT`).toISOString().slice(0, 10)}>{post.date}</time><span>{post.minutes} min read</span></div>
       </div>
       <a href={articleUrl(post)} className="entry-image" aria-label={`Read ${post.title}`}>
-        <img src={post.image} alt="" width="180" height="110" />
+        <img src={post.image} alt="" width="180" height="110" loading="lazy" />
       </a>
       <a className="entry-read" href={articleUrl(post)} aria-label={`Read ${post.title}`}><ArrowRight size={18} /></a>
     </article>

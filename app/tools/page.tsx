@@ -1,6 +1,7 @@
 import { ArrowRight, Braces, CheckCircle2 } from 'lucide-react';
 import { articleUrl, posts, toolDetails } from '@/lib/content';
-export const metadata = { title: 'Tools', description: 'Practical Microsoft workplace scripts and builds with context, safeguards and outcomes.', alternates: { canonical: '/tools/' } };
+import { pageMetadata } from '@/lib/seo';
+export const metadata = pageMetadata('Tools', 'Practical Microsoft workplace scripts and builds with context, safeguards and outcomes.', '/tools/');
 export default function Tools() {
   const builds = posts.filter((post) => post.type === 'Build');
   return (

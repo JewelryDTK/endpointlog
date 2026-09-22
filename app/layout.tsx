@@ -4,6 +4,7 @@ import {SiteHeader} from '@/components/site-header';
 import {SiteFooter} from '@/components/site-parts';
 import {CookieConsent} from '@/components/cookie-consent';
 import './globals.css';
+import './refresh.css';
 const sans=Manrope({variable:'--font-sans-main',subsets:['latin'],display:'swap'});
 const brand=Inter({variable:'--font-brand',subsets:['latin'],display:'swap'});
 const description='Practical guides, tested builds and grounded insights for the Microsoft workplace. By Jewelry Kenepa.';
@@ -22,4 +23,4 @@ export const metadata:Metadata={
   manifest:'/manifest.webmanifest',
 };
 export const viewport:Viewport={themeColor:'#171b29',colorScheme:'light'};
-export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="en"><body className={sans.variable+' '+brand.variable}><SiteHeader/>{children}<SiteFooter/><CookieConsent/></body></html>;}
+export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="en"><body className={sans.variable+' '+brand.variable}><a className="skip-link" href="#main">Skip to content</a><SiteHeader/>{children}<SiteFooter/><CookieConsent/></body></html>;}

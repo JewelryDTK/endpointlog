@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
-export const metadata = { title: 'Contact', description: 'Connect with Jewelry Kenepa about EndpointLog and Microsoft workplace knowledge.', alternates: { canonical: '/contact/' } };
+import { pageMetadata } from '@/lib/seo';
+export const metadata = pageMetadata('Contact', 'Connect with Jewelry Kenepa about EndpointLog and Microsoft workplace knowledge.', '/contact/');
 export default function Contact() {
   return (
     <main id="main">

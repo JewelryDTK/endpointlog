@@ -9,7 +9,7 @@ export type ContentType = (typeof contentTypes)[number];
 const summaries: Record<number, string> = {
   674: 'What the Windows Hello change means for sign-in, enrollment and identity teams.',
   647: 'A hands-on look at Microsoft 365 Copilot Wave 3 and the features that matter at work.',
-  572: 'A PowerShell tool for finding and removing stale Intune objects with clear safeguards.',
+  572: 'Reset Intune policies in a lab tenant with PowerShell, a dry run and explicit confirmation.',
   583: 'What the move to user-based licensing changes for Endpoint Privilege Management.',
   520: 'What happened when Microsoft 365 Copilot became part of my daily workflow.',
   438: 'Building a bulk workflow for Windows Autopilot group tags without repetitive admin work.',
@@ -40,9 +40,9 @@ export const articleUrl = (post: Post) => `/article/${post.slug}`;
 
 export const toolDetails: Record<number, { problem: string; technology: string[]; outcome: string }> = {
   572: {
-    problem: 'Inactive devices and duplicate records make an Intune tenant harder to trust and maintain.',
+    problem: 'Leftover policies and configuration make lab tenants difficult to reset between demos.',
     technology: ['PowerShell', 'Microsoft Graph', 'Intune'],
-    outcome: 'Review stale objects first, then remove only the records you approve.',
+    outcome: 'Preview configuration across 25 categories, then explicitly confirm a lab policy reset.',
   },
   438: {
     problem: 'Assigning Windows Autopilot group tags one device at a time does not scale.',

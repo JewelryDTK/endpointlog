@@ -33,13 +33,20 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
     image: `https://endpointlog.com${post.image}`,
     datePublished: new Date(`${post.date} 00:00:00 GMT`).toISOString(),
     dateModified: new Date(`${post.date} 00:00:00 GMT`).toISOString(),
-    author: { '@type': 'Person', name: 'Jewelry Kenepa', url: 'https://endpointlog.com/about/' },
+    author: { '@type': 'Person', '@id': 'https://endpointlog.com/about/#person', name: 'Jewelry Kenepa', url: 'https://endpointlog.com/about/' },
     publisher: { '@type': 'Organization', name: 'EndpointLog', url: 'https://endpointlog.com/' },
     mainEntityOfPage: `https://endpointlog.com/article/${post.slug}/`,
   };
   return (
     <main id="main">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://endpointlog.com/' },
+          { '@type': 'ListItem', position: 2, name: 'Knowledge', item: 'https://endpointlog.com/knowledge/' },
+          { '@type': 'ListItem', position: 3, name: post.title, item: `https://endpointlog.com/article/${post.slug}/` },
+        ],
+      }).replace(/</g, '\\u003c') }} />
       <header className="article-heading shell">
         <a href="/knowledge" className="back-link"><ArrowLeft size={16} /> Knowledge</a>
         <div className="article-classification">

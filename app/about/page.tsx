@@ -1,10 +1,12 @@
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { ContributionCard } from '@/components/site-parts';
 import { posts } from '@/lib/content';
-export const metadata = { title: 'About Jewelry Kenepa', description: 'About Jewelry Kenepa and the practical Microsoft workplace knowledge documented on EndpointLog.', alternates: { canonical: '/about/' } };
+import { authorSchema, pageMetadata } from '@/lib/seo';
+export const metadata = pageMetadata('About Jewelry Kenepa', 'About Jewelry Kenepa and the practical Microsoft workplace knowledge documented on EndpointLog.', '/about/');
 export default function About() {
   return (
     <main id="main">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(authorSchema) }} />
       <header className="about-hero shell">
         <div>
           <span className="micro-label">About / Jewelry Kenepa</span>
@@ -12,7 +14,7 @@ export default function About() {
           <p>I’m Jewelry Kenepa, a Senior Technical Consultant working across the Microsoft modern workplace.</p>
           <a className="button" href="https://www.linkedin.com/in/jewelrykenepa/" target="_blank" rel="noopener noreferrer">Connect on LinkedIn <ArrowUpRight size={17} /></a>
         </div>
-        <figure><img src="/assets/jewelry.jpg" alt="Jewelry Kenepa" width="480" height="540" /><figcaption>Senior Technical Consultant · Netherlands</figcaption></figure>
+        <figure><img src="/assets/jewelry.jpg" alt="Jewelry Kenepa" width="480" height="540" /><figcaption><strong>Jewelry Kenepa</strong><span>Senior Technical Consultant</span><span>Netherlands</span></figcaption></figure>
       </header>
       <section className="shell about-story">
         <div><span className="micro-label">Why EndpointLog</span><h2>Notes from real technical work.</h2></div>
