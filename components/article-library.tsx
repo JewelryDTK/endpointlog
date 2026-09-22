@@ -88,7 +88,7 @@ export function ArticleLibrary() {
         {(filters.topic || filters.type || filters.query) && <a href="/knowledge/" onClick={(event) => { event.preventDefault(); updateFilters({ topic: '', type: '', query: '' }); }}>Clear filters <X size={15} /></a>}
       </div>
       {filtered.length ? (
-        <div className="contribution-grid">{filtered.map((post) => <ContributionCard key={post.id} post={post} />)}</div>
+        <div className="contribution-grid contribution-stack">{filtered.map((post) => <ContributionCard key={post.id} post={post} showAuthor />)}</div>
       ) : (
         <section className="empty-state">
           <Search size={30} />
