@@ -47,19 +47,21 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
           { '@type': 'ListItem', position: 3, name: post.title, item: `https://endpointlog.com/article/${post.slug}/` },
         ],
       }).replace(/</g, '\\u003c') }} />
-      <header className="article-heading shell">
-        <a href="/knowledge" className="back-link"><ArrowLeft size={16} /> Knowledge</a>
-        <div className="article-classification">
-          <span className={`type-badge type-${post.type.toLowerCase()}`}>{post.type}</span>
-          {post.topics.map((topic) => <a key={topic} href={`/knowledge?topic=${encodeURIComponent(topic)}`}>{topic}</a>)}
-        </div>
-        <h1>{post.title}</h1>
-        <p>{post.summary}</p>
-        <div className="article-meta">
-          <a href="/about"><img src="/assets/jewelry.jpg" alt="" width="44" height="44" /><span><strong>Jewelry Kenepa</strong><small>Author and practitioner</small></span></a>
-          <span><Clock3 size={16} /> {post.minutes} min read</span><span>{post.date}</span>
-        </div>
-      </header>
+      <div className="article-hero">
+        <header className="article-heading shell">
+          <a href="/knowledge" className="back-link"><ArrowLeft size={16} /> Knowledge</a>
+          <div className="article-classification">
+            <span className={`type-badge type-${post.type.toLowerCase()}`}>{post.type}</span>
+            {post.topics.map((topic) => <a key={topic} href={`/knowledge?topic=${encodeURIComponent(topic)}`}>{topic}</a>)}
+          </div>
+          <h1>{post.title}</h1>
+          <p>{post.summary}</p>
+          <div className="article-meta">
+            <a href="/about"><img src="/assets/jewelry.jpg" alt="" width="44" height="44" /><span><strong>Jewelry Kenepa</strong><small>Author and practitioner</small></span></a>
+            <span><Clock3 size={16} /> {post.minutes} min read</span><span>{post.date}</span>
+          </div>
+        </header>
+      </div>
       <div className="shell article-cover"><img src={post.image} alt={post.title} width="1200" height="620" /></div>
       <div className="shell article-layout">
         <aside className="article-toc">
