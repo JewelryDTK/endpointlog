@@ -6,7 +6,7 @@ import { ContributionCard } from '@/components/site-parts';
 
 type ArticleBlock =
   | { type: 'h2' | 'h3' | 'p' | 'pre' | 'li'; text: string }
-  | { type: 'image'; src: string; alt: string; caption: string }
+  | { type: 'image'; src: string; alt: string; caption: string; sourceName?: string; sourceUrl?: string }
   | { type: 'link'; text: string; href: string };
 
 export function generateStaticParams() { return posts.map((post) => ({ slug: post.slug })); }
@@ -79,7 +79,7 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
             block.type === 'h3' ? <h3 id={`section-${index}`} key={index}>{block.text}</h3> :
             block.type === 'pre' ? <pre key={index} tabIndex={0}><code>{block.text}</code></pre> :
             block.type === 'li' ? <ul key={index}><li>{block.text}</li></ul> :
-            block.type === 'image' ? <figure className="article-figure" key={index}><img src={block.src} alt={block.alt} loading="lazy" /><figcaption>{block.caption}</figcaption></figure> :
+            block.type === 'image' ? <figure className="article-figure" key={index}><a href={block.src} target="_blank" rel="noopener noreferrer" aria-label={`View full-size image: ${block.alt}`}><img src={block.src} alt={block.alt} loading="lazy" /></a><figcaption>{block.caption}{block.sourceUrl && <> Source: <a href={block.sourceUrl} target="_blank" rel="noopener noreferrer">{block.sourceName}</a>.</>}</figcaption></figure> :
             block.type === 'link' ? <p className="article-reference" key={index}><a href={block.href} target="_blank" rel="noopener noreferrer">{block.text} <ArrowRight size={15} aria-hidden="true" /></a></p> :
             <p key={index}>{block.text}</p>
           )}
