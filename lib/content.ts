@@ -7,6 +7,7 @@ export type Topic = (typeof topics)[number];
 export type ContentType = (typeof contentTypes)[number];
 
 const summaries: Record<number, string> = {
+  928: 'How Deployment Plans stage Intune apps and policies without manually changing assignments between rings.',
   674: 'What the Windows Hello change means for sign-in, enrollment and identity teams.',
   647: 'A hands-on look at Microsoft 365 Copilot Wave 3 and the features that matter at work.',
   572: 'Reset Intune policies in a lab tenant with PowerShell, a dry run and explicit confirmation.',
@@ -18,12 +19,14 @@ const summaries: Record<number, string> = {
 };
 
 const topicMap: Record<number, Topic[]> = {
+  928: ['Endpoints', 'Security'],
   674: ['Security', 'Endpoints'], 647: ['AI & Copilot'], 572: ['Automation', 'Endpoints'],
   583: ['Endpoints'], 520: ['AI & Copilot'], 438: ['Automation', 'Endpoints'],
   402: ['Endpoints', 'Security'], 357: ['AI & Copilot'],
 };
 
 const typeMap: Record<number, ContentType> = {
+  928: 'Guide',
   674: 'Guide', 647: 'Insight', 572: 'Build', 583: 'Insight',
   520: 'Insight', 438: 'Build', 402: 'Guide', 357: 'Insight',
 };

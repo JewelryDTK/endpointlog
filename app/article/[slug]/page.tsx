@@ -4,6 +4,11 @@ import { ArrowLeft, ArrowRight, Clock3 } from 'lucide-react';
 import { posts } from '@/lib/content';
 import { ContributionCard } from '@/components/site-parts';
 
+type ArticleBlock =
+  | { type: 'h2' | 'h3' | 'p' | 'pre' | 'li'; text: string }
+  | { type: 'image'; src: string; alt: string; caption: string }
+  | { type: 'link'; text: string; href: string };
+
 export function generateStaticParams() { return posts.map((post) => ({ slug: post.slug })); }
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -23,7 +28,8 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
   const { slug } = await params;
   const post = posts.find((item) => item.slug === slug);
   if (!post) notFound();
-  const sections = post.blocks.map((block, index) => ({ ...block, index })).filter((block) => block.type === 'h2' || block.type === 'h3');
+  const blocks = post.blocks as ArticleBlock[];
+  const sections = blocks.flatMap((block, index) => block.type === 'h2' || block.type === 'h3' ? [{ text: block.text, index }] : []);
   const related = posts.filter((item) => item.id !== post.id && item.topics.some((topic) => post.topics.includes(topic))).slice(0, 3);
   const structuredData = {
     '@context': 'https://schema.org',
@@ -68,11 +74,13 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         </aside>
         <article className="article-prose" id="article-content">
           <div className="article-summary"><span className="micro-label">At a glance</span><p>{post.summary}</p></div>
-          {post.blocks.map((block, index) =>
+          {blocks.map((block, index) =>
             block.type === 'h2' ? <h2 id={`section-${index}`} key={index}>{block.text}</h2> :
             block.type === 'h3' ? <h3 id={`section-${index}`} key={index}>{block.text}</h3> :
             block.type === 'pre' ? <pre key={index} tabIndex={0}><code>{block.text}</code></pre> :
             block.type === 'li' ? <ul key={index}><li>{block.text}</li></ul> :
+            block.type === 'image' ? <figure className="article-figure" key={index}><img src={block.src} alt={block.alt} loading="lazy" /><figcaption>{block.caption}</figcaption></figure> :
+            block.type === 'link' ? <p className="article-reference" key={index}><a href={block.href} target="_blank" rel="noopener noreferrer">{block.text} <ArrowRight size={15} aria-hidden="true" /></a></p> :
             <p key={index}>{block.text}</p>
           )}
           <div className="article-author">
