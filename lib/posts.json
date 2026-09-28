@@ -18,9 +18,7 @@
         "type": "image",
         "src": "/assets/intune-deployments-overview.png",
         "alt": "Intune Devices > Deployments overview showing the Deployments and Deployment plans tabs.",
-        "caption": "The Deployments page brings individual rollouts and reusable plans into one place. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size.",
-        "sourceName": "Abraham Anteskog / EndpointExperience",
-        "sourceUrl": "https://www.endpointexperience.com/natively-deploy-applications-and-configuration-using-rings-in-intune/"
+        "caption": "The Deployments page brings individual rollouts and reusable plans into one place. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size."
       },
       {
         "type": "p",
@@ -106,17 +104,13 @@
         "type": "image",
         "src": "/assets/intune-deployments-select-plan.png",
         "alt": "Select deployment plan pane with first-ring start date and time and a reusable three-ring plan.",
-        "caption": "Load a reusable plan and choose when its first ring starts. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size.",
-        "sourceName": "Abraham Anteskog / EndpointExperience",
-        "sourceUrl": "https://www.endpointexperience.com/natively-deploy-applications-and-configuration-using-rings-in-intune/"
+        "caption": "Load a reusable plan and choose when its first ring starts. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size."
       },
       {
         "type": "image",
         "src": "/assets/intune-deployments-manage-rings.png",
         "alt": "Manage rings pane within the Create deployment wizard, showing ring name and initial start date and time fields.",
-        "caption": "For a one-off rollout, Add rings opens Manage rings. This view shows the initial ring before further stages are added. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size.",
-        "sourceName": "Abraham Anteskog / EndpointExperience",
-        "sourceUrl": "https://www.endpointexperience.com/natively-deploy-applications-and-configuration-using-rings-in-intune/"
+        "caption": "For a one-off rollout, Add rings opens Manage rings. This view shows the initial ring before further stages are added. Earlier development UI, published August 2026; labels may differ in the current preview. Select the image to view it full size."
       },
       {
         "type": "p",
