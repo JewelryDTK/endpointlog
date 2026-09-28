@@ -538,5 +538,7 @@ body{
 .article-figure{margin:36px 0 42px}
 .article-figure img{display:block;width:100%;height:auto;border:1px solid var(--line);background:#f3f7fd}
 .article-figure figcaption{margin-top:10px;color:var(--muted);font-size:.78rem;line-height:1.5}
+.article-figure>a{display:block;cursor:zoom-in}
+.article-figure figcaption a{color:var(--interactive);text-decoration:underline;text-underline-offset:3px}
 .article-reference{margin:0 0 9px!important;font-size:.88rem}
 .article-reference a{display:inline-flex;align-items:center;gap:7px;color:var(--interactive);font-weight:750;text-decoration:underline;text-underline-offset:3px}
