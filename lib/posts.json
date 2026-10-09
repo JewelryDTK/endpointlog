@@ -2,6 +2,258 @@
   {
     "categories": [
       "Intune",
+      "Automation"
+    ],
+    "minutes": 11,
+    "image": "/assets/intune-nuke-v2-cover.png",
+    "id": 941,
+    "title": "I Rebuilt My Intune Nuke Button",
+    "date": "09 Oct 2026",
+    "slug": "i-rebuilt-my-intune-nuke-button",
+    "blocks": [
+      {
+        "type": "p",
+        "text": "In July I wrote about the nuke button I built for my Intune lab tenants: a PowerShell script that walks 25 Graph endpoints, lists everything it finds, makes you type YES and then deletes the lot. I ended that post with a confession. The confirmation never told you which tenant you were about to empty, and that was the line I said I wouldn’t ship without."
+      },
+      {
+        "type": "p",
+        "text": "So I rebuilt it. Not a patch with the tenant check pasted in after the connect, but a new script: Intune-Nuke.ps1. It is a five-step wizard that signs you in fresh, shows you exactly where you are, lets you choose what goes, backs up every object as JSON before it touches anything, and only deletes after you have typed the tenant’s domain name back to it."
+      },
+      {
+        "type": "link",
+        "text": "Read the original post: I Built a Nuke Button for Intune",
+        "href": "/article/i-built-a-nuke-button-for-intune"
+      },
+      {
+        "type": "p",
+        "text": "The ground rule hasn’t changed. This is a lab and demo tenant tool: POC teardown, resetting a training environment, handing a tenant back clean. It is not for production, and most of the work in this version went into making it harder to use it in the wrong place."
+      },
+      {
+        "type": "h2",
+        "text": "What changed, in short"
+      },
+      {
+        "type": "li",
+        "text": "The tenant check is built in. You see the tenant name, initial domain, tenant ID and account straight after sign-in, and the final step only proceeds if you type the initial domain exactly."
+      },
+      {
+        "type": "li",
+        "text": "Every object is backed up as JSON before deletion, including assignments and settings. If an object can’t be backed up, it isn’t deleted."
+      },
+      {
+        "type": "li",
+        "text": "You choose what goes. The scan groups everything into categories and you pick the ones you want, instead of all or nothing."
+      },
+      {
+        "type": "li",
+        "text": "Deletion follows dependency order and retries objects that are still in use, so a policy set or a filter no longer blocks half the run."
+      },
+      {
+        "type": "li",
+        "text": "It handles Graph throttling, runs on PowerShell 7 on macOS, Windows and Linux, and asks for fewer permissions than before."
+      },
+      {
+        "type": "li",
+        "text": "The scope grew from 25 to 36 object types, and it now also clears apps. More on that below, because it is the one change that can catch you out."
+      },
+      {
+        "type": "h2",
+        "text": "Step 1: a fresh sign-in, every time"
+      },
+      {
+        "type": "p",
+        "text": "The scenario I worried about last time was the stale session. Connect-MgGraph happily reuses whatever context you had, and if you were in a customer tenant an hour ago, that is where the script would run."
+      },
+      {
+        "type": "p",
+        "text": "Version two disconnects any existing Graph session first, then signs in interactively with a process-scoped context, so the token doesn’t outlive the PowerShell window. You can pass -TenantId to target a specific tenant. As soon as you’re connected, it reads the organisation from Graph and shows the tenant display name, the initial onmicrosoft.com domain, the tenant ID and the signed-in account, then asks whether that is the right tenant. The default answer is no."
+      },
+      {
+        "type": "h2",
+        "text": "Step 2: scan without changing anything"
+      },
+      {
+        "type": "p",
+        "text": "The scan is read-only. It goes through every object type and counts what is there, grouped into eleven categories: policy sets, app protection and app config, apps, compliance, configuration and endpoint security, scripts and remediations, Windows updates, enrollment, tenant admin, assignment filters and scope tags."
+      },
+      {
+        "type": "p",
+        "text": "Two details make the output easier to trust. Endpoints that can’t be read, usually because a feature isn’t licensed or enabled in the tenant, are listed separately with the error instead of breaking the scan. And built-in objects that can’t be removed are counted as skipped, so you can see the script deliberately leaving them alone: Microsoft’s global apps and remediation scripts, the default enrollment configurations, the default Company Portal branding profile, built-in Intune roles and the default scope tag."
+      },
+      {
+        "type": "h2",
+        "text": "Step 3: choose what goes"
+      },
+      {
+        "type": "p",
+        "text": "The first version was all or nothing. That is fine for a full teardown, but more often I want to reset compliance and configuration and keep my enrollment setup. Now you choose. If Out-ConsoleGridView is installed you get a checkbox list in the terminal. Otherwise you type category numbers, ranges like 2-6, or A for everything. Nothing selected means nothing happens."
+      },
+      {
+        "type": "h2",
+        "text": "Step 4: a backup before every delete"
+      },
+      {
+        "type": "p",
+        "text": "This is the change I care about most. Before anything is removed, each selected object is exported to its own JSON file, sorted into folders per category and type under IntuneNuke-Backups, in a run folder named after the tenant domain and a timestamp."
+      },
+      {
+        "type": "p",
+        "text": "The export is fuller than a plain GET. Settings Catalog and endpoint security policies are exported with their settings and assignments. Administrative templates include their definition values and presentation values, legacy security baselines include their settings, and notification templates include their localised messages. Each file also records the object type, its Graph path and the export time."
+      },
+      {
+        "type": "p",
+        "text": "The rule that matters: if the backup of an object fails, that object goes nowhere. It is logged as a backup failure and left out of the deletion queue."
+      },
+      {
+        "type": "p",
+        "text": "That also changes what -DryRun means. In the first version a dry run was a scan and a count. Now it is a scan plus a full backup, with no deletion. That makes it a useful export of a lab tenant even when you don’t intend to clear it."
+      },
+      {
+        "type": "p",
+        "text": "To be clear about the limits: this is a backup, not an undo button. There is no restore script yet. The JSON gives you a record of exactly what was there and the raw material to rebuild it by hand or with your own import tooling."
+      },
+      {
+        "type": "h2",
+        "text": "Step 5: type the tenant domain"
+      },
+      {
+        "type": "p",
+        "text": "The last step shows how many objects will be removed and from which tenant, by display name and initial domain. Then it asks you to type that domain. Not YES, not a keypress, but contoso-lab.onmicrosoft.com, character for character. Get it wrong and it stops with nothing deleted."
+      },
+      {
+        "type": "p",
+        "text": "After that there is a five-second countdown in red, so Ctrl+C still gets you out. Small, but it is the moment you most often realise something."
+      },
+      {
+        "type": "p",
+        "text": "Deletion runs in a fixed order to respect dependencies. Policy sets go first because they reference everything else. Filters and scope tags go last because they are in use until the objects that reference them are gone. Autopilot profiles have their assignments removed before the profile itself, and custom Intune roles have their role assignments removed first. Anything that still fails with an in-use error, such as an app with supersedence or a dependency, gets another try in a second and third round, ten seconds apart. Only what still fails after that is reported as an error."
+      },
+      {
+        "type": "p",
+        "text": "Every backup and delete ends up in nuke-log.csv in the run folder: time, category, type, name, ID, action, result and error, so you can filter it in Excel instead of scrolling a text log."
+      },
+      {
+        "type": "h2",
+        "text": "What it clears now, and the change to watch"
+      },
+      {
+        "type": "p",
+        "text": "The first version covered 25 endpoints. Version two covers 36 object types. New are policy sets, Windows app protection, custom compliance scripts, reusable settings such as firewall rule groups, imported ADMX files, Apple ADE and user-initiated enrollment profiles, Android Enterprise enrollment profiles, device categories, terms and conditions, non-default Company Portal branding and custom Intune roles with their assignments."
+      },
+      {
+        "type": "p",
+        "text": "The one to watch: apps. Last time I wrote that the script doesn’t remove the apps you’ve uploaded. That is no longer true. Version two includes the mobileApps endpoint and removes every app that isn’t a built-in Microsoft global app. Apps are a separate category in the selection, so if you want to keep your Win32 packages, leave it unticked."
+      },
+      {
+        "type": "p",
+        "text": "Two things I deliberately took out of scope. The first version deleted depOnboardingSettings, which is the Apple ADE token connection itself, not just the profiles. This version only removes the enrollment profiles under each token and leaves the token in place. More generally, it leaves connectors and tokens alone: APNs, ADE, VPP and Managed Google Play. Renewing an Apple push certificate because you reset a lab is not a good afternoon."
+      },
+      {
+        "type": "p",
+        "text": "It also no longer deletes default enrollment configurations, and it still doesn’t touch Conditional Access, Entra users and groups, enrolled devices or Autopilot hardware hashes."
+      },
+      {
+        "type": "p",
+        "text": "If the tenant uses Windows Autopatch, expect some policies to come back. Autopatch recreates its own policies for as long as it is active. The script prints that as a reminder at the end."
+      },
+      {
+        "type": "h2",
+        "text": "Under the hood"
+      },
+      {
+        "type": "p",
+        "text": "A few changes that you won’t notice until they matter:"
+      },
+      {
+        "type": "li",
+        "text": "Throttling. Every Graph call retries on 429, 503 and 504, with exponential backoff, and respects the Retry-After header when Graph sends one. On a larger tenant the first version could simply hit the limit and log failures."
+      },
+      {
+        "type": "li",
+        "text": "Fewer modules and a pinned version. It only loads Microsoft.Graph.Authentication, pinned to 2.25.0, instead of installing the full Graph SDK. Newer releases of the module crashed on my PowerShell 7.4 and 7.5 setup, so the pin is deliberate. If the module is missing, it asks before installing it for the current user."
+      },
+      {
+        "type": "li",
+        "text": "Permissions. It requests DeviceManagementConfiguration, Apps, ServiceConfig, RBAC and Scripts ReadWrite, plus Organization.Read.All for the tenant name. DeviceManagementManagedDevices.ReadWrite.All is gone: the script never touches devices, so it doesn’t need the right to."
+      },
+      {
+        "type": "li",
+        "text": "Cross-platform. It requires PowerShell 7, and I run it from my Mac with pwsh."
+      },
+      {
+        "type": "h2",
+        "text": "How it ran in my lab"
+      },
+      {
+        "type": "p",
+        "text": "I tested it today against my own lab tenant. First a dry run: 120 objects found and exported, nothing deleted. Then the real run with every category selected: 120 objects backed up and 120 deleted, with zero failures and nothing left for a retry round."
+      },
+      {
+        "type": "p",
+        "text": "The mix was typical for a lab that has been used for a few months: 89 Settings Catalog and endpoint security policies, 11 compliance policies, 10 template configuration profiles, 5 Autopilot deployment profiles, 2 custom Intune roles, and one each of a custom compliance script, an administrative template and terms and conditions. The whole run, backup included, took under a minute and a half."
+      },
+      {
+        "type": "h2",
+        "text": "How I’d run it"
+      },
+      {
+        "type": "li",
+        "text": "Use an account that only has rights in the lab tenant, and pass -TenantId so you sign in to the tenant you mean."
+      },
+      {
+        "type": "li",
+        "text": "Run with -DryRun first. Check the tenant details, read the scan and open the backup folder."
+      },
+      {
+        "type": "li",
+        "text": "Run it for real, select only the categories you want to reset, and leave Apps unticked unless you really want your packages gone."
+      },
+      {
+        "type": "li",
+        "text": "Type the domain, watch the countdown, and keep the run folder. The JSON and nuke-log.csv are your record of what left the tenant."
+      },
+      {
+        "type": "pre",
+        "text": "pwsh ./Intune-Nuke.ps1 -DryRun -TenantId contoso-lab.onmicrosoft.com\npwsh ./Intune-Nuke.ps1 -TenantId contoso-lab.onmicrosoft.com"
+      },
+      {
+        "type": "h2",
+        "text": "The full script"
+      },
+      {
+        "type": "p",
+        "text": "Here is the complete script. The console prompts and some category names are in Dutch, because that is the language I work in. They are short, and the flow follows the five steps above: answer j for yes at the tenant check. You can also download the file directly. PowerShell 7 and lab tenants only."
+      },
+      {
+        "type": "link",
+        "text": "Download Intune-Nuke.ps1",
+        "href": "/downloads/Intune-Nuke.ps1"
+      },
+      {
+        "type": "pre",
+        "text": "<#\n.SYNOPSIS\n    Intune Nuke - verwijdert (na backup) alle Intune-configuratie uit een tenant.\n    Conditional Access, Entra ID-objecten, connectors/tokens en devices blijven ongemoeid.\n\n.DESCRIPTION\n    Wizard in 5 stappen:\n      1. Inloggen         - interactief, je ziet direct tenantnaam + account\n      2. Scannen          - telt per categorie wat er staat (verandert niets)\n      3. Kiezen           - vink categorieën aan (of A = alles)\n      4. Backup           - elk object wordt eerst als JSON weggeschreven\n      5. Nuke             - pas na het intypen van de tenant-domeinnaam\n\n    Werkt op macOS, Windows en Linux (PowerShell 7+).\n\n.PARAMETER DryRun\n    Scan + backup, maar verwijder niets. Handig om eerst te zien wat er zou gebeuren.\n\n.PARAMETER TenantId\n    Optioneel: tenant-ID of domein om in te loggen (anders je standaardtenant).\n\n.PARAMETER BackupPath\n    Map waar backups en logs komen. Standaard: ./IntuneNuke-Backups\n\n.EXAMPLE\n    pwsh ./Intune-Nuke.ps1 -DryRun\n    pwsh ./Intune-Nuke.ps1\n    pwsh ./Intune-Nuke.ps1 -TenantId contoso.onmicrosoft.com\n#>\n#Requires -Version 7.0\n[CmdletBinding()]\nparam(\n    [switch]$DryRun,\n    [string]$TenantId,\n    [string]$BackupPath = (Join-Path (Get-Location) 'IntuneNuke-Backups')\n)\n\n$ErrorActionPreference = 'Stop'\n$Graph = 'https://graph.microsoft.com/beta'\n\n# ----------------------------------------------------------------------------\n#  Wat wordt er opgeruimd? (volgorde = verwijdervolgorde, i.v.m. afhankelijkheden)\n# ----------------------------------------------------------------------------\n$Types = @(\n    # 1. Policy sets eerst: die verwijzen naar alles hieronder\n    @{ Group='Policy sets';                       Name='Policy sets';                         Uri='deviceAppManagement/policySets' }\n\n    # 2. App protection & app configuration (verwijzen naar apps)\n    @{ Group='App protection & app config';       Name='App protection - iOS';                Uri='deviceAppManagement/iosManagedAppProtections' }\n    @{ Group='App protection & app config';       Name='App protection - Android';            Uri='deviceAppManagement/androidManagedAppProtections' }\n    @{ Group='App protection & app config';       Name='App protection - Windows';            Uri='deviceAppManagement/windowsManagedAppProtections' }\n    @{ Group='App protection & app config';       Name='WIP (MDM)';                           Uri='deviceAppManagement/mdmWindowsInformationProtectionPolicies' }\n    @{ Group='App protection & app config';       Name='WIP (MAM)';                           Uri='deviceAppManagement/windowsInformationProtectionPolicies' }\n    @{ Group='App protection & app config';       Name='App config - managed apps';           Uri='deviceAppManagement/targetedManagedAppConfigurations' }\n    @{ Group='App protection & app config';       Name='App config - managed devices';        Uri='deviceAppManagement/mobileAppConfigurations' }\n\n    # 3. Apps (ingebouwde 'global' apps van Microsoft kunnen niet weg en worden overgeslagen)\n    @{ Group='Apps';                              Name='Apps';                                Uri='deviceAppManagement/mobileApps'\n       Skip = { param($o) $o.appAvailability -eq 'global' } }\n\n    # 4. Compliance\n    @{ Group='Compliance';                        Name='Compliance policies';                 Uri='deviceManagement/deviceCompliancePolicies' }\n    @{ Group='Compliance';                        Name='Custom compliance scripts';           Uri='deviceManagement/deviceComplianceScripts' }\n\n    # 5. Configuratie\n    @{ Group='Configuratie & endpoint security';  Name='Configuratieprofielen (templates)';   Uri='deviceManagement/deviceConfigurations' }\n    @{ Group='Configuratie & endpoint security';  Name='Settings catalog / endpoint security';Uri='deviceManagement/configurationPolicies'; Expand='settings,assignments' }\n    @{ Group='Configuratie & endpoint security';  Name='Administrative templates';            Uri='deviceManagement/groupPolicyConfigurations'\n       Children = @('definitionValues?$expand=definition($select=id,displayName,classType),presentationValues') }\n    @{ Group='Configuratie & endpoint security';  Name='Security baselines / ES (legacy)';    Uri='deviceManagement/intents'; Children=@('settings') }\n    @{ Group='Configuratie & endpoint security';  Name='Reusable settings (firewall e.d.)';   Uri='deviceManagement/reusablePolicySettings'; Expand='' }\n    @{ Group='Configuratie & endpoint security';  Name='Geïmporteerde ADMX-bestanden';        Uri='deviceManagement/groupPolicyUploadedDefinitionFiles'; Expand='' }\n\n    # 6. Scripts\n    @{ Group='Scripts & remediations';            Name='Platform scripts - Windows';          Uri='deviceManagement/deviceManagementScripts' }\n    @{ Group='Scripts & remediations';            Name='Shell scripts - macOS';               Uri='deviceManagement/deviceShellScripts' }\n    @{ Group='Scripts & remediations';            Name='Custom attributes - macOS';           Uri='deviceManagement/deviceCustomAttributeShellScripts' }\n    @{ Group='Scripts & remediations';            Name='Remediations';                        Uri='deviceManagement/deviceHealthScripts'\n       Skip = { param($o) $o.isGlobalScript -eq $true } }\n\n    # 7. Windows updates (update rings zitten bij configuratieprofielen)\n    @{ Group='Windows updates';                   Name='Feature updates';                     Uri='deviceManagement/windowsFeatureUpdateProfiles' }\n    @{ Group='Windows updates';                   Name='Quality updates (expedite)';          Uri='deviceManagement/windowsQualityUpdateProfiles' }\n    @{ Group='Windows updates';                   Name='Driver updates';                      Uri='deviceManagement/windowsDriverUpdateProfiles' }\n\n    # 8. Enrollment\n    @{ Group='Enrollment';                        Name='Autopilot deployment profiles';       Uri='deviceManagement/windowsAutopilotDeploymentProfiles'; PreDelete='AutopilotAssignments' }\n    @{ Group='Enrollment';                        Name='ESP / restricties / WHfB / limieten'; Uri='deviceManagement/deviceEnrollmentConfigurations'\n       Skip = { param($o) $o.priority -eq 0 -or $o.id -match '_Default' } }\n    @{ Group='Enrollment';                        Name='Apple ADE enrollment profiles';       Lister='DepProfiles'; Expand='' }\n    @{ Group='Enrollment';                        Name='Apple user-initiated profiles';       Uri='deviceManagement/appleUserInitiatedEnrollmentProfiles' }\n    @{ Group='Enrollment';                        Name='Android Enterprise enrollment profiles'; Uri='deviceManagement/androidDeviceOwnerEnrollmentProfiles'; Expand='' }\n    @{ Group='Enrollment';                        Name='Device categories';                   Uri='deviceManagement/deviceCategories'; Expand='' }\n    @{ Group='Enrollment';                        Name='Terms and conditions';                Uri='deviceManagement/termsAndConditions' }\n\n    # 9. Tenant admin\n    @{ Group='Tenant admin';                      Name='Notification templates (compliance)'; Uri='deviceManagement/notificationMessageTemplates'; Children=@('localizedNotificationMessages'); Expand='' }\n    @{ Group='Tenant admin';                      Name='Company Portal branding (niet-default)'; Uri='deviceManagement/intuneBrandingProfiles'\n       Skip = { param($o) $o.isDefaultProfile -eq $true } }\n    @{ Group='Tenant admin';                      Name='Custom Intune-rollen (+ toewijzingen)'; Uri='deviceManagement/roleDefinitions'; Expand='roleAssignments'; PreDelete='RoleAssignments'\n       Skip = { param($o) $o.isBuiltIn -eq $true } }\n\n    # 10. Filters & scope tags als laatste (anders 'in use')\n    @{ Group='Assignment filters';                Name='Assignment filters';                  Uri='deviceManagement/assignmentFilters'; Expand='' }\n    @{ Group='Scope tags';                        Name='Scope tags (niet-default)';           Uri='deviceManagement/roleScopeTags'; Expand='assignments'\n       Skip = { param($o) $o.isBuiltIn -eq $true -or \"$($o.id)\" -eq '0' } }\n)\n\n$Scopes = @(\n    'DeviceManagementConfiguration.ReadWrite.All'\n    'DeviceManagementApps.ReadWrite.All'\n    'DeviceManagementServiceConfig.ReadWrite.All'\n    'DeviceManagementRBAC.ReadWrite.All'\n    'DeviceManagementScripts.ReadWrite.All'\n    'Organization.Read.All'\n)\n\n# ----------------------------------------------------------------------------\n#  Helpers\n# ----------------------------------------------------------------------------\nfunction Write-Step($n, $text) {\n    Write-Host ''\n    Write-Host \"  [$n/5] $text\" -ForegroundColor Cyan\n    Write-Host ('  ' + ('─' * 60)) -ForegroundColor DarkGray\n}\n\nfunction Invoke-Graph {\n    param([string]$Method = 'GET', [string]$Path)\n    $uri = if ($Path -match '^https://') { $Path } else { \"$Graph/$Path\" }\n    for ($i = 0; $i -lt 6; $i++) {\n        try {\n            return Invoke-MgGraphRequest -Method $Method -Uri $uri -OutputType PSObject -ErrorAction Stop\n        } catch {\n            $code = $null\n            try { $code = [int]$_.Exception.Response.StatusCode } catch {}\n            if ($code -in 429, 503, 504 -and $i -lt 5) {\n                $wait = [math]::Pow(2, $i + 1)\n                try { $ra = $_.Exception.Response.Headers.RetryAfter.Delta.TotalSeconds; if ($ra) { $wait = $ra } } catch {}\n                Start-Sleep -Seconds $wait\n                continue\n            }\n            throw\n        }\n    }\n}\n\nfunction Get-GraphAll([string]$Path) {\n    $out  = [System.Collections.Generic.List[object]]::new()\n    $next = $Path\n    while ($next) {\n        $r = Invoke-Graph -Path $next\n        if ($null -ne $r.value) { foreach ($v in $r.value) { $out.Add($v) } }\n        $next = $r.'@odata.nextLink'\n    }\n    return $out\n}\n\nfunction Get-ErrText($err) {\n    $m = $err.ErrorDetails.Message\n    if (-not $m) { $m = $err.Exception.Message }\n    try { $j = $m | ConvertFrom-Json; if ($j.error.message) { $m = $j.error.message } } catch {}\n    ($m -replace '\\s+', ' ').Trim() | Select-Object -First 1\n}\n\nfunction Get-ObjName($o) {\n    foreach ($p in 'displayName', 'name', 'fileName') { if ($o.$p) { return [string]$o.$p } }\n    return [string]$o.id\n}\n\nfunction Get-SafeName([string]$s) {\n    $s = ($s -replace '[\\\\/:*?\"<>|\\r\\n\\t]', '_').Trim()\n    if ($s.Length -gt 60) { $s = $s.Substring(0, 60) }\n    return $s\n}\n\nfunction Get-Items($t) {\n    if ($t.Lister -eq 'DepProfiles') {\n        $items = @()\n        foreach ($tok in (Get-GraphAll 'deviceManagement/depOnboardingSettings')) {\n            foreach ($p in (Get-GraphAll \"deviceManagement/depOnboardingSettings/$($tok.id)/enrollmentProfiles\")) {\n                $p | Add-Member -NotePropertyName '_path' -NotePropertyValue \"deviceManagement/depOnboardingSettings/$($tok.id)/enrollmentProfiles/$($p.id)\" -Force\n                $items += $p\n            }\n        }\n        return $items\n    }\n    $items = Get-GraphAll $t.Uri\n    foreach ($i in $items) { $i | Add-Member -NotePropertyName '_path' -NotePropertyValue \"$($t.Uri)/$($i.id)\" -Force }\n    return $items\n}\n\nfunction Remove-Dependencies($t, $o) {\n    switch ($t.PreDelete) {\n        'AutopilotAssignments' {\n            foreach ($a in (Get-GraphAll \"$($o._path)/assignments\")) {\n                Invoke-Graph -Method DELETE -Path \"$($o._path)/assignments/$($a.id)\" | Out-Null\n            }\n        }\n        'RoleAssignments' {\n            foreach ($a in (Get-GraphAll \"$($o._path)/roleAssignments\")) {\n                Invoke-Graph -Method DELETE -Path \"deviceManagement/roleAssignments/$($a.id)\" | Out-Null\n            }\n        }\n    }\n}\n\nfunction Backup-Item($t, $o, [string]$dir) {\n    $expand = if ($t.ContainsKey('Expand')) { $t.Expand } else { 'assignments' }\n    $full = $null\n    if ($expand) { try { $full = Invoke-Graph -Path \"$($o._path)?`$expand=$expand\" } catch {} }\n    if (-not $full) { try { $full = Invoke-Graph -Path $o._path } catch { $full = $o } }\n\n    $export = [ordered]@{ _nuke = [ordered]@{ type = $t.Name; graphPath = $o._path; exportedAt = (Get-Date).ToString('s') }; object = $full }\n    foreach ($c in @($t.Children)) {\n        if (-not $c) { continue }\n        try { $export[\"_child_$(($c -split '\\?')[0])\"] = Get-GraphAll \"$($o._path)/$c\" } catch { $export[\"_child_$c\"] = \"BACKUP FOUT: $(Get-ErrText $_)\" }\n    }\n    $file = Join-Path $dir (\"{0}__{1}.json\" -f (Get-SafeName (Get-ObjName $o)), $o.id)\n    $export | ConvertTo-Json -Depth 50 | Set-Content -Path $file -Encoding utf8\n    return $file\n}\n\n# ----------------------------------------------------------------------------\n#  Banner\n# ----------------------------------------------------------------------------\nClear-Host\nWrite-Host ''\nWrite-Host '   ██╗███╗   ██╗████████╗██╗   ██╗███╗   ██╗███████╗    ███╗   ██╗██╗   ██╗██╗  ██╗███████╗' -ForegroundColor Red\nWrite-Host '   ██║████╗  ██║╚══██╔══╝██║   ██║████╗  ██║██╔════╝    ████╗  ██║██║   ██║██║ ██╔╝██╔════╝' -ForegroundColor Red\nWrite-Host '   ██║██╔██╗ ██║   ██║   ██║   ██║██╔██╗ ██║█████╗      ██╔██╗ ██║██║   ██║█████╔╝ █████╗  ' -ForegroundColor Red\nWrite-Host '   ██║██║╚██╗██║   ██║   ██║   ██║██║╚██╗██║██╔══╝      ██║╚██╗██║██║   ██║██╔═██╗ ██╔══╝  ' -ForegroundColor Red\nWrite-Host '   ██║██║ ╚████║   ██║   ╚██████╔╝██║ ╚████║███████╗    ██║ ╚████║╚██████╔╝██║  ██╗███████╗' -ForegroundColor Red\nWrite-Host '   ╚═╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝' -ForegroundColor Red\nWrite-Host ''\nWrite-Host '   Verwijdert Intune-configuratie. Blijft staan: Conditional Access, Entra-groepen/-users,' -ForegroundColor Gray\nWrite-Host '   devices, Autopilot-hashes en connectors/tokens (APNs, ADE, VPP, Managed Google Play).' -ForegroundColor Gray\nif ($DryRun) { Write-Host '   *** DRY RUN: er wordt NIETS verwijderd ***' -ForegroundColor Yellow }\n\n# ----------------------------------------------------------------------------\n#  1. Inloggen\n# ----------------------------------------------------------------------------\nWrite-Step 1 'Inloggen bij Microsoft Graph'\n\n# Vaste moduleversie: nieuwere versies vereisen .NET 10 en crashen op PowerShell 7.4/7.5\n$GraphModVer = '2.25.0'\nif (-not (Get-Module -ListAvailable -Name Microsoft.Graph.Authentication | Where-Object { $_.Version -eq $GraphModVer })) {\n    $ans = Read-Host \"  Module Microsoft.Graph.Authentication $GraphModVer ontbreekt. Nu installeren (CurrentUser)? [J/n]\"\n    if ($ans -match '^[nN]') { Write-Host '  Gestopt.'; return }\n    Install-Module Microsoft.Graph.Authentication -RequiredVersion $GraphModVer -Scope CurrentUser -Force -AllowClobber\n}\nImport-Module Microsoft.Graph.Authentication -RequiredVersion $GraphModVer\n\n# Altijd vers inloggen, zodat je nooit per ongeluk in een gecachte (andere) tenant zit\ntry { Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null } catch {}\n$connectArgs = @{ Scopes = $Scopes; NoWelcome = $true; ContextScope = 'Process' }\nif ($TenantId) { $connectArgs.TenantId = $TenantId }\nConnect-MgGraph @connectArgs\n\n$ctx  = Get-MgContext\n$org  = (Invoke-Graph -Path 'https://graph.microsoft.com/v1.0/organization').value | Select-Object -First 1\n$initialDomain = ($org.verifiedDomains | Where-Object { $_.isInitial }).name\n\nWrite-Host ''\nWrite-Host \"  Tenant   : $($org.displayName)\" -ForegroundColor White\nWrite-Host \"  Domein   : $initialDomain\"      -ForegroundColor White\nWrite-Host \"  TenantId : $($ctx.TenantId)\"    -ForegroundColor White\nWrite-Host \"  Account  : $($ctx.Account)\"     -ForegroundColor White\n$ok = Read-Host '  Is dit de juiste tenant? [j/N]'\nif ($ok -notmatch '^[jJyY]') { Write-Host '  Gestopt. Er is niets gewijzigd.' -ForegroundColor Yellow; Disconnect-MgGraph | Out-Null; return }\n\n# ----------------------------------------------------------------------------\n#  2. Scannen\n# ----------------------------------------------------------------------------\nWrite-Step 2 'Scannen (alleen lezen)'\n\n$Inventory = [ordered]@{}\n$n = 0\nforeach ($t in $Types) {\n    $n++\n    Write-Progress -Activity 'Scannen' -Status $t.Name -PercentComplete ($n / $Types.Count * 100)\n    $entry = @{ Type = $t; Items = @(); Skipped = 0; Error = $null }\n    try {\n        $all = @(Get-Items $t)\n        if ($t.Skip) {\n            $keep = @($all | Where-Object { -not (& $t.Skip $_) })\n            $entry.Skipped = $all.Count - $keep.Count\n            $all = $keep\n        }\n        $entry.Items = $all\n    } catch {\n        $entry.Error = Get-ErrText $_\n    }\n    $Inventory[$t.Name] = $entry\n}\nWrite-Progress -Activity 'Scannen' -Completed\n\n$groups = $Types.Group | Select-Object -Unique\n$menu = @()\n$i = 0\nforeach ($g in $groups) {\n    $i++\n    $entries = $Inventory.Values | Where-Object { $_.Type.Group -eq $g }\n    $count   = ($entries | ForEach-Object { $_.Items.Count } | Measure-Object -Sum).Sum\n    $detail  = ($entries | Where-Object { $_.Items.Count -gt 0 } | ForEach-Object { \"$($_.Type.Name): $($_.Items.Count)\" }) -join ' | '\n    $menu += [pscustomobject]@{ Nr = $i; Categorie = $g; Aantal = [int]$count; Details = $detail }\n}\n\nWrite-Host ''\n$menu | Format-Table Nr, Categorie, Aantal, Details -AutoSize -Wrap | Out-String -Width 200 | Write-Host\n\n$errs = $Inventory.Values | Where-Object { $_.Error }\nif ($errs) {\n    Write-Host '  Niet uit te lezen (vaak: feature niet gelicenseerd/ingeschakeld — kan geen kwaad):' -ForegroundColor DarkYellow\n    $errs | ForEach-Object { Write-Host \"   - $($_.Type.Name): $($_.Error)\" -ForegroundColor DarkGray }\n}\n$skips = $Inventory.Values | Where-Object { $_.Skipped -gt 0 }\nif ($skips) {\n    Write-Host '  Overgeslagen (ingebouwd/default, kan niet weg):' -ForegroundColor DarkGray\n    $skips | ForEach-Object { Write-Host \"   - $($_.Type.Name): $($_.Skipped)\" -ForegroundColor DarkGray }\n}\n\n$total = ($menu | Measure-Object Aantal -Sum).Sum\nif (-not $total) { Write-Host \"`n  Niets gevonden om op te ruimen. Je tenant is al schoon.\" -ForegroundColor Green; Disconnect-MgGraph | Out-Null; return }\n\n# ----------------------------------------------------------------------------\n#  3. Kiezen\n# ----------------------------------------------------------------------------\nWrite-Step 3 'Kies wat er weg moet'\n\n$selected = @()\nif (Get-Command Out-ConsoleGridView -ErrorAction SilentlyContinue) {\n    Write-Host '  Spatie = aan/uitvinken, Enter = bevestigen, Esc = stoppen' -ForegroundColor Gray\n    $selected = @($menu | Where-Object Aantal -gt 0 | Out-ConsoleGridView -Title 'Intune Nuke - kies categorieën' -OutputMode Multiple).Categorie\n} else {\n    while (-not $selected) {\n        $inp = Read-Host '  Nummers (bijv. 1,3,5 of 2-6), A = alles, Q = stoppen'\n        if ($inp -match '^[qQ]$') { break }\n        if ($inp -match '^[aA]$') { $selected = $menu.Categorie; break }\n        $nums = foreach ($part in ($inp -split '[,\\s]+' | Where-Object { $_ })) {\n            if ($part -match '^(\\d+)-(\\d+)$') { [int]$matches[1]..[int]$matches[2] } elseif ($part -match '^\\d+$') { [int]$part }\n        }\n        $selected = @($menu | Where-Object { $_.Nr -in $nums }).Categorie\n        if (-not $selected) { Write-Host '  Geen geldige keuze, probeer opnieuw.' -ForegroundColor Yellow }\n    }\n}\nif (-not $selected) { Write-Host '  Niets gekozen. Gestopt, er is niets gewijzigd.' -ForegroundColor Yellow; Disconnect-MgGraph | Out-Null; return }\n\n$work = @($Inventory.Values | Where-Object { $_.Type.Group -in $selected -and $_.Items.Count -gt 0 })\n$workCount = ($work | ForEach-Object { $_.Items.Count } | Measure-Object -Sum).Sum\n\nWrite-Host ''\nWrite-Host \"  Gekozen: $($selected -join ', ')\" -ForegroundColor White\nWrite-Host \"  Totaal : $workCount objecten\" -ForegroundColor White\n\n# ----------------------------------------------------------------------------\n#  4. Backup\n# ----------------------------------------------------------------------------\nWrite-Step 4 'Backup maken (JSON per object)'\n\n$stamp   = Get-Date -Format 'yyyyMMdd-HHmmss'\n$runDir  = Join-Path $BackupPath (\"{0}_{1}\" -f (Get-SafeName $initialDomain), $stamp)\nNew-Item -ItemType Directory -Path $runDir -Force | Out-Null\n$logFile = Join-Path $runDir 'nuke-log.csv'\n$log = [System.Collections.Generic.List[object]]::new()\nfunction Add-Log($t, $o, $action, $result, $err) {\n    $log.Add([pscustomobject]@{ Time = (Get-Date).ToString('s'); Category = $t.Group; Type = $t.Name; Name = (Get-ObjName $o); Id = $o.id; Action = $action; Result = $result; Error = $err })\n}\n\n$queue = [System.Collections.Generic.List[object]]::new()\n$n = 0; $bkFail = 0\nforeach ($e in $work) {\n    $t   = $e.Type\n    $dir = Join-Path $runDir (Join-Path (Get-SafeName $t.Group) (Get-SafeName $t.Name))\n    New-Item -ItemType Directory -Path $dir -Force | Out-Null\n    foreach ($o in $e.Items) {\n        $n++\n        Write-Progress -Activity 'Backup' -Status \"$($t.Name): $(Get-ObjName $o)\" -PercentComplete ($n / $workCount * 100)\n        try {\n            Backup-Item $t $o $dir | Out-Null\n            Add-Log $t $o 'Backup' 'OK' ''\n            $queue.Add(@{ Type = $t; Obj = $o })\n        } catch {\n            $bkFail++\n            Add-Log $t $o 'Backup' 'FOUT' (Get-ErrText $_)   # zonder backup: NIET verwijderen\n        }\n    }\n}\nWrite-Progress -Activity 'Backup' -Completed\n$log | Export-Csv -Path $logFile -NoTypeInformation -Encoding utf8\nWrite-Host \"  Backup klaar: $($queue.Count) objecten -> $runDir\" -ForegroundColor Green\nif ($bkFail) { Write-Host \"  $bkFail objecten konden niet geback-upt worden en worden NIET verwijderd (zie log).\" -ForegroundColor Yellow }\n\nif ($DryRun) {\n    Write-Host \"`n  DRY RUN klaar. Er is niets verwijderd. Bekijk de backupmap om te zien wat er weg zou gaan.\" -ForegroundColor Yellow\n    Disconnect-MgGraph | Out-Null\n    return\n}\n\n# ----------------------------------------------------------------------------\n#  5. NUKE\n# ----------------------------------------------------------------------------\nWrite-Step 5 'NUKE'\nWrite-Host ''\nWrite-Host \"  Je staat op het punt $($queue.Count) objecten DEFINITIEF te verwijderen uit:\" -ForegroundColor Red\nWrite-Host \"      $($org.displayName)  ($initialDomain)\" -ForegroundColor Red\nWrite-Host ''\n$confirm = Read-Host \"  Typ '$initialDomain' om te bevestigen\"\nif ($confirm -ne $initialDomain) { Write-Host '  Komt niet overeen. Gestopt, er is niets verwijderd.' -ForegroundColor Yellow; Disconnect-MgGraph | Out-Null; return }\n\nfor ($s = 5; $s -gt 0; $s--) { Write-Host \"`r  Start over $s s... (Ctrl+C om af te breken) \" -NoNewline -ForegroundColor Red; Start-Sleep 1 }\nWrite-Host ''\n\n# Meerdere rondes: objecten die 'in use' zijn (bijv. app-afhankelijkheden/supersedence)\n# lukken vaak wel nadat andere objecten weg zijn.\n$pending = $queue\nfor ($round = 1; $round -le 3 -and $pending.Count -gt 0; $round++) {\n    $failed = [System.Collections.Generic.List[object]]::new()\n    $n = 0\n    foreach ($q in $pending) {\n        $n++\n        $t = $q.Type; $o = $q.Obj\n        Write-Progress -Activity \"Verwijderen (ronde $round)\" -Status \"$($t.Name): $(Get-ObjName $o)\" -PercentComplete ($n / $pending.Count * 100)\n        try {\n            Remove-Dependencies $t $o\n            Invoke-Graph -Method DELETE -Path $o._path | Out-Null\n            Add-Log $t $o 'Delete' 'OK' ''\n            Write-Host \"  ✔ $($t.Name): $(Get-ObjName $o)\" -ForegroundColor DarkGreen\n        } catch {\n            $q.LastError = Get-ErrText $_\n            $failed.Add($q)\n        }\n    }\n    Write-Progress -Activity \"Verwijderen (ronde $round)\" -Completed\n    if ($failed.Count -eq $pending.Count) { $pending = $failed; break }   # geen voortgang meer\n    $pending = $failed\n    if ($pending.Count -gt 0 -and $round -lt 3) { Write-Host \"  $($pending.Count) objecten nog in gebruik, nieuwe poging over 10 s...\" -ForegroundColor DarkYellow; Start-Sleep 10 }\n}\nforeach ($q in $pending) {\n    Add-Log $q.Type $q.Obj 'Delete' 'FOUT' $q.LastError\n    Write-Host \"  ✘ $($q.Type.Name): $(Get-ObjName $q.Obj) — $($q.LastError)\" -ForegroundColor Red\n}\n$log | Export-Csv -Path $logFile -NoTypeInformation -Encoding utf8\n\n# ----------------------------------------------------------------------------\n#  Samenvatting\n# ----------------------------------------------------------------------------\n$okCount = ($log | Where-Object { $_.Action -eq 'Delete' -and $_.Result -eq 'OK' }).Count\nWrite-Host ''\nWrite-Host '  ════════════════════ KLAAR ════════════════════' -ForegroundColor Cyan\nWrite-Host \"  Verwijderd : $okCount\"           -ForegroundColor Green\nWrite-Host \"  Mislukt    : $($pending.Count)\"  -ForegroundColor ($(if ($pending.Count) { 'Red' } else { 'Green' }))\nWrite-Host \"  Backup     : $runDir\"            -ForegroundColor White\nWrite-Host \"  Log        : $logFile\"           -ForegroundColor White\nWrite-Host ''\nWrite-Host '  Tip: Windows Autopatch maakt zijn eigen policies opnieuw aan zolang Autopatch actief is.' -ForegroundColor DarkGray\nDisconnect-MgGraph | Out-Null"
+      },
+      {
+        "type": "h2",
+        "text": "Final thoughts"
+      },
+      {
+        "type": "p",
+        "text": "Last time I wrote that the interesting engineering was never the deletion, but the discovery, the preview, the confirmation and the log. Version two adds the two things I was missing: knowing where you are, and being able to see afterwards exactly what was there."
+      },
+      {
+        "type": "p",
+        "text": "The next thing on my list is a restore that reads those JSON files back in. Until then, the backup makes the nuke button a lot less frightening to press."
+      },
+      {
+        "type": "p",
+        "text": "Do you back up your lab tenants before you reset them, or is it still a clean slate and hope for the best?"
+      }
+    ]
+  },
+  {
+    "categories": [
+      "Intune",
       "Endpoint management"
     ],
     "minutes": 9,
@@ -518,6 +770,15 @@
     ],
     "minutes": 12,
     "blocks": [
+      {
+        "type": "p",
+        "text": "Update, 9 October 2026: there is a new version of this script with a built-in tenant check, JSON backups of every object and category selection. The post below describes the original version."
+      },
+      {
+        "type": "link",
+        "text": "Read the update: I Rebuilt My Intune Nuke Button",
+        "href": "/article/i-rebuilt-my-intune-nuke-button"
+      },
       {
         "type": "p",
         "text": "Every lab tenant I keep alive for more than a couple of months turns into the same thing: a graveyard. Leftover compliance policies from a proof of concept I ran back in spring. A few half-finished Settings Catalog profiles. A security baseline I spun up to test one setting and never removed. A pile of Autopilot profiles with names like “test2” and “test2-final.” None of it does any harm sitting there. It just makes the tenant useless as a clean slate the next time I want to demo something properly."

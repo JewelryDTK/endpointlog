@@ -7,6 +7,7 @@ export type Topic = (typeof topics)[number];
 export type ContentType = (typeof contentTypes)[number];
 
 const summaries: Record<number, string> = {
+  941: 'Version two of my Intune lab reset: a forced tenant check, JSON backups of every object and category selection.',
   928: 'How Deployment Plans stage Intune apps and policies without manually changing assignments between rings.',
   674: 'What the Windows Hello change means for sign-in, enrollment and identity teams.',
   647: 'A hands-on look at Microsoft 365 Copilot Wave 3 and the features that matter at work.',
@@ -19,6 +20,7 @@ const summaries: Record<number, string> = {
 };
 
 const topicMap: Record<number, Topic[]> = {
+  941: ['Automation', 'Endpoints'],
   928: ['Endpoints', 'Security'],
   674: ['Security', 'Endpoints'], 647: ['AI & Copilot'], 572: ['Automation', 'Endpoints'],
   583: ['Endpoints'], 520: ['AI & Copilot'], 438: ['Automation', 'Endpoints'],
@@ -26,6 +28,7 @@ const topicMap: Record<number, Topic[]> = {
 };
 
 const typeMap: Record<number, ContentType> = {
+  941: 'Build',
   928: 'Guide',
   674: 'Guide', 647: 'Insight', 572: 'Build', 583: 'Insight',
   520: 'Insight', 438: 'Build', 402: 'Guide', 357: 'Insight',
@@ -42,6 +45,11 @@ export type Post = (typeof posts)[number];
 export const articleUrl = (post: Post) => `/article/${post.slug}`;
 
 export const toolDetails: Record<number, { problem: string; technology: string[]; outcome: string }> = {
+  941: {
+    problem: 'Resetting a lab tenant should never hit the wrong tenant or remove something you cannot get back.',
+    technology: ['PowerShell 7', 'Microsoft Graph', 'Intune'],
+    outcome: 'Scan 36 object types, back up each one as JSON, then delete only after typing the tenant domain.',
+  },
   572: {
     problem: 'Leftover policies and configuration make lab tenants difficult to reset between demos.',
     technology: ['PowerShell', 'Microsoft Graph', 'Intune'],
